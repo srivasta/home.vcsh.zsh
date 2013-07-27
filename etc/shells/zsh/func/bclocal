@@ -1,0 +1,18 @@
+file=$1
+EMACS=/usr/local/bin/emacs
+FLAVOUR="$($EMACS --batch -Q --eval '(prin1 debian-emacs-flavor)')"
+
+if [ ! -f $file ]; then
+    echo $file: No such file
+    return 1
+fi
+
+for flavour in $(echo "$FLAVOUR"); do
+    $EMACS -batch -Q -f batch-byte-compile $1
+    if [ -f ${1}c  ]; then
+         echo mv -f ${1}c ~/etc/emacs/$flavour/
+         mv -f ${1}c ~/etc/emacs/$flavour/
+    else
+        echo could not compile for $flavour
+    fi
+done

@@ -1,0 +1,73 @@
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# Created On       : Mon Jul 25 15:18:23 2005
+#
+# Copyright © 2005-2010 Manoj Srivastava <srivasta@debian.org>
+
+
+
+# If running interactively, then:
+if [[ -n "$PS1" ]]; then
+    alias tf="perl -e 'printf \"%c]50;%s%c\", 27, @ARGV, 7 ; ' "
+    alias tn="perl -e 'printf \"%c]2;%s%c\", 27, @ARGV, 7 ; ' "
+    alias ti="perl -e 'printf \"%c]1;%s%c\", 27, @ARGV, 7 ; ' "
+    alias tb="perl -e 'printf \"%c]0;%s%c\", 27, @ARGV, 7 ; ' "
+
+    # use xs to reset xterm window 
+    alias xs='set noglob; eval `resize`; unset noglob;reset'
+
+
+    # Xterm resizing-fu.
+    # Based on http://svn.kitenet.net/trunk/home-full/.zshrc?rev=11710&view=log (by Joey Hess)
+    alias hide='echo -en "\033]50;nil2\007"'
+    alias tiny='echo -en "\033]50;-misc-fixed-medium-r-normal-*-*-80-*-*-c-*-iso8859-15\007"'
+    alias small='echo -en "\033]50;6x10\007"'
+    alias medium='echo -en "\033]50;-misc-fixed-medium-r-normal--13-120-75-75-c-80-iso8859-15\007"'
+    alias default='echo -e "\033]50;-misc-fixed-medium-r-normal-*-*-140-*-*-c-*-iso8859-15\007"'
+    alias large='echo -en "\033]50;-misc-fixed-medium-r-normal-*-*-150-*-*-c-*-iso8859-15\007"'
+    alias huge='echo -en "\033]50;-misc-fixed-medium-r-normal-*-*-210-*-*-c-*-iso8859-15\007"'
+    alias smartfont='echo -en "\033]50;-artwiz-smoothansi-*-*-*-*-*-*-*-*-*-*-*-*\007"'
+    alias semifont='echo -en "\033]50;-misc-fixed-medium-r-semicondensed-*-*-120-*-*-*-*-iso8859-15\007"'
+
+    # see http://www.cl.cam.ac.uk/~mgk25/unicode.html#term for details
+    alias term2iso="echo 'Setting terminal to iso mode' ; print -n '\e%@'"
+    alias term2utf="echo 'Setting terminal to utf-8 mode'; print -n '\e%G'"
+
+    # make sure it is not assigned yet
+    [[ -n ${aliases[utf2iso]} ]] && unalias utf2iso
+    utf2iso() {
+        if isutfenv ; then
+            for ENV in $(env | command grep -i '.utf') ; do
+                eval export "$(echo $ENV | sed 's/UTF-8/iso885915/ ; s/utf8/iso885915/')"
+            done
+        fi
+    }
+
+    # make sure it is not assigned yet
+    [[ -n ${aliases[iso2utf]} ]] && unalias iso2utf
+    iso2utf() {
+        if ! isutfenv ; then
+            for ENV in $(env | command grep -i '\.iso') ; do
+                eval export "$(echo $ENV | sed 's/iso.*/UTF-8/ ; s/ISO.*/UTF-8/')"
+            done
+        fi
+    }   
+
+fi
+
+# Local Variables: 
+# comment-start: "#" 
+# tab-width: 2 
+# mode: sh
+# End: 

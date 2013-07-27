@@ -1,0 +1,43 @@
+#                               -*- Mode: Sh -*- 
+# .bash_aliases --- 
+# Author           : Manoj Srivastava ( srivasta@glaurung.green-gryphon.com ) 
+# Created On       : Fri Sep 29 12:09:40 2000
+# Created On Node  : glaurung.green-gryphon.com
+# Last Modified By : Manoj Srivastava
+# Last Modified On : Wed Oct  8 11:23:48 2008
+# Last Machine Used: anzu.internal.golden-gryphon.com
+# Update Count     : 18
+# Status           : Unknown, Use with caution!
+# HISTORY          : 
+# Description      : 
+# 
+# 
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+# Copyright © 2000-2010 Manoj Srivastava <srivasta@debian.org>
+
+
+# If running interactively, then:
+if [[ -n "$PS1" ]]; then
+		if [ -e "${ZDOTDIR}/.zsh_aliases" ]; then
+				source  "${ZDOTDIR}/.zsh_aliases" 
+		fi
+fi
+
+# Local Variables: 
+# comment-start: "#" 
+# tab-width: 2 
+# mode: sh
+# End: 

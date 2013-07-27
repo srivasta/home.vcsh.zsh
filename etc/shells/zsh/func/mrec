@@ -1,0 +1,13 @@
+#! /bin/zsh -f
+
+# mrec ()
+# {
+  local override="$1" numRevs=1
+
+  if [[ -n "$override" ]]; then
+      numRevs="$override";
+  fi
+  echo dch --no-auto-nmu --append -- $(git log -${numRevs} --pretty='format:[%h]: %s%n%b')
+  dch --no-auto-nmu --append -- $(git log -${numRevs} --pretty='format:[%h]: %s%n%b')
+
+# }

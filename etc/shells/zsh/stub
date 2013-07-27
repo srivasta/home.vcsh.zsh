@@ -1,0 +1,52 @@
+# Stub for all .z* files; actual content comes from a directory
+#
+# Inspired by a setup from martin f. krafft <madduck@madduck.net>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+# Copyright © 2010 Manoj Srivastava <srivasta@debian.org>
+
+# Only run if not zsh -f
+if [[ -o rcs ]]; then
+    export default_dir=${default_dir:=$HOME}
+    export ZDOTDIR=${ZDOTDIR:=$default_dir/etc/shells/zsh}
+    # ${(%) -- Expand all % escapes in the resulting words in the same
+    #          way as in prompts
+    # %1N -- The name of the script, sourced file, or shell function
+    #        that zsh is currently executing. An integer may follow
+    #        the `%' to specify a number of trailing path components
+    #        to show
+    # #.  -- ${name#pattern} If the pattern matches the beginning of
+    #        the value of name, then substitute the value of name with
+    #        the portion deleted; otherwise, just substitute the value
+    #        of name. the smallest matching pattern is preferred
+    _DIR=$ZDOTDIR/${${(%):-%1N}#.}
+    if [[ -d $_DIR ]]; then
+        # .      plain files
+        # @      symbolic links
+        # N      sets the NULL_GLOB option for the current pattern
+        #        If a pattern for filename generation has no matches,
+        #        delete the pattern from the argument list instead of
+        #        reporting an error.
+        for f in "$_DIR"/*(.N,@N); do
+            case "$f" in
+                *~|*.bak|*.old|*.sw?|*.zwc|*.disabled) continue;;
+            esac
+            source "$f"
+        done
+    fi
+    
+    unset _DIR
+fi

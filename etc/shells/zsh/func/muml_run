@@ -1,0 +1,17 @@
+#! /bin/zsh -f
+
+# muml_run ()
+# {
+  local keep="$1" rootFile='/scratch/sandbox/cow_fs,/scratch/sandbox/root_fs';
+  if [[ -n "$keep" ]]; then
+      rootFile='/scratch/sandbox/root_fs'
+  fi
+  cd /scratch/sandbox
+  if [[ -e /scratch/sandbox/cow_fs ]]; then
+      rm -f /scratch/sandbox/cow_fs
+  fi
+  export TMPDIR=/scratch/sandbox/tmp
+  echo screen -L -d -m -S building_uml /usr/bin/linux umid=build mem=256M con0=fd:0,fd:1 ssl=pts con=pts devfs=nomount eth0=daemon,,unix,/var/run/uml-utilities/uml_switch.ctl  hostfs=/scratch/sandbox/staging,append selinux=1 audit=1 ubdb=/scratch/sandbox/swap ubda=$rootFile
+  screen -L -d -m -S building_uml /usr/bin/linux umid=build mem=256M con0=fd:0,fd:1 ssl=pts con=pts devfs=nomount eth0=daemon,,unix,/var/run/uml-utilities/uml_switch.ctl  hostfs=/scratch/sandbox/staging,append selinux=1 audit=1 ubdb=/scratch/sandbox/swap ubda=$rootFile
+
+# }

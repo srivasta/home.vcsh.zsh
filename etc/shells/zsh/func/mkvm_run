@@ -1,0 +1,17 @@
+#! /bin/zsh -f
+
+# mkvm_run ()
+# {
+  cd /scratch/sandbox
+  if [[ -e /scratch/sandbox/build-clone.qcow2 ]]; then
+      rm -f /scratch/sandbox/build-clone.qcow2
+  fi
+
+  qemu-img create -b Create/build.qcow2 -f qcow2 build-clone.qcow2
+
+  export TMPDIR=/scratch/sandbox/tmp
+  echo kvm -snapshot -name build -hda build-clone.qcow2 -m 512 -net nic,macaddr=$(printf 'DE:AD:BE:EF:%02X:%02X\n' $((RANDOM%256)) $((RANDOM%256))) -net tap,ifname=build,script=no,downscript=no
+  kvm -snapshot -name build -hda build-clone.qcow2 -m 512 -net nic,macaddr=$(printf 'DE:AD:BE:EF:%02X:%02X\n' $((RANDOM%256)) $((RANDOM%256))) -net tap,ifname=build,script=no,downscript=no
+
+
+# }

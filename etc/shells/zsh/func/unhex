@@ -1,0 +1,20 @@
+if [[ -n "$1" ]]; then
+    num=$( echo $1 | tr 'a-f' 'A-F')
+    case "$num" in
+        ((0X|0x)[0-9A-F])*)
+            printf "%0d\n" "$num"
+            return 0
+            ;;
+        ([0-9A-F])*)
+            printf "%0d\n" "0x$num"
+            return 0
+            ;;
+        *)
+            print 'Usage: unhex <hex-number-to-convert>' ;
+            return 1 
+    esac
+else
+    print "No hex number to convert"
+    print 'Usage: unhex <hex-number-to-convert>' ;
+    return 1 
+fi

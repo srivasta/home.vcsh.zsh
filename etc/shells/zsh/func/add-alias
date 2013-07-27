@@ -1,0 +1,9 @@
+#! /bin/zsh -f
+
+#add-alias ()
+#{
+   local name="$1" value="$2"
+   echo alias $name=\'$value\' >> $ZDOTDIR/aliases
+   eval alias $name=\'$value\'
+   alias $name
+#}

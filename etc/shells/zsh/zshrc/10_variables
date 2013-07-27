@@ -1,0 +1,75 @@
+#! /bin/zsh -f
+#                               -*- Mode: Sh -*- 
+# variables --- 
+# Author           : Manoj Srivastava ( srivasta@glaurung.internal.golden-gryphon.com ) 
+# Created On       : Mon Aug  1 08:53:17 2005
+# Created On Node  : glaurung.internal.golden-gryphon.com
+# Last Modified By : Manoj Srivastava
+# Last Modified On : Fri Sep 12 11:37:21 2008
+# Last Machine Used: anzu.internal.golden-gryphon.com
+# Update Count     : 36
+# Status           : Unknown, Use with caution!
+# HISTORY          : 
+# Description      : 
+# 
+# 
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# Created On       : Mon Jul 25 15:18:23 2005
+#
+# Copyright © 2005-2010 Manoj Srivastava <srivasta@debian.org>
+
+
+
+
+export LS_OPTIONS=''
+export GREP_OPTIONS='--color=auto'
+export EMAIL=srivasta@ieee.org
+export HTML_TIDY=$HOME/etc/tidy.conf
+export BOUML_ID=4
+if [[ -r /etc/timezone ]]; then
+    TZ=$(cat /etc/timezone)    
+fi
+
+export EDITOR=~/bin/edit
+export VISUAL=~/bin/edit
+
+
+export XDG_CONFIG_HOME=$HOME/etc
+export MODULE_STARTER_DIR=$XDG_CONFIG_HOME/module-starter
+export SCREENRC=$XDG_CONFIG_HOME/screenrc
+export PERLTIDY=$XDG_CONFIG_HOME/perltidyrc
+
+# Set ignoreeof if you don't want EOF as the sole input to the shell to
+# immediately signal a quit condition.  This only happens at the start
+# of a line if the line is empty, and you haven't just deleted a character
+# with C-d.  I turn this on in ~/.bash_profile so that only login shells
+# have the right to be obnoxious. ${1+"$@"}
+# ignoreeof=
+
+# dce logins need this.
+# export HOST=`hostname | cut -d. -f1 -`
+# export BIND_PE_SITE="yes"
+# dce logins need this.
+##if test -f $HOME/etc/hosts ; then
+##      export hostname_completion_file=$HOME/etc/hosts
+##fi
+
+
+
+# Local Variables: 
+# comment-start: "#" 
+# tab-width: 2 
+# mode: sh
+# End: 

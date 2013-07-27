@@ -1,0 +1,113 @@
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# Created On       : Mon Jul 25 15:18:23 2005
+#
+# Copyright © 2005-2010 Manoj Srivastava <srivasta@debian.org>
+
+
+# If running interactively, then:
+if [[ -n "$PS1" ]]; then
+    # Some useful aliases.
+    alias mv='nocorrect mv'
+    alias cp='nocorrect cp'
+    alias mkdir='nocorrect noglob mkdir'
+    alias rm='nocorrect rm' 
+    alias man='nocorrect man'
+    alias mysql='nocorrect mysql'
+
+
+    #a1# Execute \kbd{rmdir}
+    alias rd='rmdir'
+    #a1# Execute \kbd{mkdir}
+    alias md='mkdir -p'
+
+
+    #unalias run-help
+    alias help=run-help
+
+    alias c=clear
+    alias cx="chmod ugo+x "
+    alias back='cd $last_dir'
+    alias d="dirs -vp"
+
+    alias bsu='/bin/su --preserve-environment --shell=/bin/bash root "-- -i  -rcfile ~srivasta/.rootrc" '
+
+    alias h='fc -i -D -l 1 -1'
+
+    alias pd='pushd'
+    alias m='less'
+
+    alias mdstat='cat /proc/mdstat'
+    alias ...='cd ../../'
+
+    alias 1='cd -'
+    alias 2='cd +2'
+    alias 3='cd +3'
+    alias 4='cd +4'
+    alias 5='cd +5'
+    alias 6='cd +6'
+    alias 7='cd +7'
+    alias 8='cd +8'
+    alias 9='cd +9'
+
+
+    alias -g ND='$(ls -d *(/om[1]))' # newest directory
+    alias -g NF='$(ls *(.om[1]))'    # newest file
+
+    alias rot13=' tr A-Za-z N-ZA-Mn-za-m'
+
+    alias embc='emacs -batch -f batch-byte-compile'
+    alias em='GDK_NATIVE_WINDOWS=1 emacsclient -c '
+
+
+    alias chk_utf='find . -type f | while read i; do iconv -f utf-8 -t ucs-4 $i > /dev/null; echo $? $i; done | grep ^1'
+    alias perldb='perl -de 0 '
+
+    # we don't want to quote/espace URLs on our own...
+    # if autoload -U url-quote-magic ; then
+    #    zle -N self-insert url-quote-magic
+    #    zstyle ':url-quote-magic:*' url-metas '*?[]^()~#{}='
+    # else
+    #    print 'Notice: no url-quote-magic available :('
+    # fi
+    alias url-quote='autoload -U url-quote-magic ; zle -N self-insert url-quote-magic'
+
+    # Xterm resizing-fu.
+    # Based on http://svn.kitenet.net/trunk/home-full/.zshrc?rev=11710&view=log (by Joey Hess)
+    alias hide='echo -en "\033]50;nil2\007"'
+    alias tiny='echo -en "\033]50;-misc-fixed-medium-r-normal-*-*-80-*-*-c-*-iso8859-15\007"'
+    alias small='echo -en "\033]50;6x10\007"'
+    alias medium='echo -en "\033]50;-misc-fixed-medium-r-normal--13-120-75-75-c-80-iso8859-15\007"'
+    alias default='echo -e "\033]50;-misc-fixed-medium-r-normal-*-*-140-*-*-c-*-iso8859-15\007"'
+    alias large='echo -en "\033]50;-misc-fixed-medium-r-normal-*-*-150-*-*-c-*-iso8859-15\007"'
+    alias huge='echo -en "\033]50;-misc-fixed-medium-r-normal-*-*-210-*-*-c-*-iso8859-15\007"'
+    alias smartfont='echo -en "\033]50;-artwiz-smoothansi-*-*-*-*-*-*-*-*-*-*-*-*\007"'
+    alias semifont='echo -en "\033]50;-misc-fixed-medium-r-semicondensed-*-*-120-*-*-*-*-iso8859-15\007"'
+
+    # general
+    #a2# Execute \kbd{du -sch}
+    alias da='du -sch'
+    #a2# Execute \kbd{jobs -l}
+    alias j='jobs -l'
+    # get top 10 shell commands:
+    alias top10='print -l ${(o)history%% *} | uniq -c | sort -nr | head -n 10'
+
+#    alias prettylog=git log --pretty='format:%at %C(yellow)commit %H%Creset\nAuthor: %an <%ae>\nDate: %aD\n\n %s\n' | sort -r | cut -d' ' -f2- | sed -e 's/\\\n/\`echo -e '\n\r'`/g' | tr -d '\15\32' | less -R" 
+fi
+
+# Local Variables: 
+# comment-start: "#" 
+# tab-width: 2 
+# mode: sh
+# End: 

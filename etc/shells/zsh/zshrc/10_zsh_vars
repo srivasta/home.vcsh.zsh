@@ -1,0 +1,96 @@
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# Created On       : Mon Jul 25 15:18:23 2005
+#
+# Copyright © 2005-2010 Manoj Srivastava <srivasta@debian.org>
+
+# For interactive shells, we can display text a page at a time. Set
+# READNULLCMD to the $PAGER variable (or, failing that, more).
+READNULLCMD="${PAGER-more}"
+
+ # Watching for other users
+LOGCHECK=60
+ ## watch for my friends
+ ## An array (colon-separated list) of login/logout events to report.
+ ## If it contains the single word `all', then all login/logout events
+ ## are reported.  If it contains the single word `notme', then all
+ ## events are reported as with `all' except $USERNAME.
+ ## An entry in this list may consist of a username,
+ ## an `@' followed by a remote hostname,
+ ## and a `%' followed by a line (tty).
+watch=(notme)
+
+ ## The format of login/logout reports if the watch parameter is set.
+ ## Default is `%n has %a %l from %m'.
+ ## Recognizes the following escape sequences:
+ ## %n = name of the user that logged in/out.
+ ## %a = observed action, i.e. "logged on" or "logged off".
+ ## %l = line (tty) the user is logged in on.
+ ## %M = full hostname of the remote host.
+ ## %m = hostname up to the first `.'.
+ ## %t or %@ = time, in 12-hour, am/pm format.
+ ## %w = date in `day-dd' format.
+ ## %W = date in `mm/dd/yy' format.
+ ## %D = date in `yy-mm-dd' format.
+WATCHFMT="[%B%t%b] %B%n%b has %a %B%l%b from %B%M%b"
+ #
+
+# If nonnegative, commands whose combined user and system execution times
+## (measured in seconds) are greater than this value have timing
+## statistics printed for them.
+REPORTTIME=60
+
+# format of process time reports with 'time'
+#  %%     A `%'.
+#  %U     CPU seconds spent in user mode.
+#  %S     CPU seconds spent in kernel mode.
+#  %E     Elapsed time in seconds.
+#  %P     The CPU percentage, computed as  (%U+%S)/%E.
+#  %J     The name of this job.
+# Default is: 
+#       %E real  %U user  %S system   %P  %J
+TIMEFMT="Real: %E User: %U System: %S Percent: %P Cmd: %J"
+
+
+
+#       no 0   for normal text  (i.e.  when  displaying  something
+#              other than a matched file)
+#       fi 0   for regular files
+#       di 32  for directories
+#       ln 36  for symbolic links
+#       pi 31  for named pipes (FIFOs)
+#       so 33  for sockets
+#       bd 44;37
+#              for block devices
+#       cd 44;37
+#              for character devices
+#       ex 35  for executable files
+#       mi none
+#              for non-existent file (default is the value defined
+#              for fi)
+#       lc \e[ for the left code (see below)
+#       rc m   for the right code
+#       ec none
+#              for the end code
+
+
+ZLS_COLOURS="no=36;40:fi=36;40:di=32;40:ln=33;40:pi=31;40:so=22;40:bd=44;37:cd=44;37:ex=35;40:mi=36;40:lc=\e[:rc=m:mi=37;41"
+export ZLS_COLOURS
+
+
+# Local Variables: 
+# comment-start: "#" 
+# tab-width: 2 
+# mode: sh
+# End: 

@@ -1,0 +1,20 @@
+# USAGE: timeout [--no-msg] <delay-in-deconds> <cmd>
+#   <cmd> can start with 'exec' to avoid creating a new process
+# timeout --no-msg timeout 10 sleep 2.5
+# timeout --no-msg exec sh -c 'echo $PPID'
+# timeout 5 sleep 10  
+#timeout () {
+    if [ "${1:-}" = "-h" -o "${1:-}" = "--help" ]; then
+        printf "USAGE: timeout [--no-msg] <delay-in-deconds> <cmd>\n  <cmd> can start with 'exec' to avoid creating a new process\n"
+        return
+    fi
+    local no_msg=false; [ "${1:-}" = "--no-msg" ] && { no_msg=true ; shift ; }
+    local s=${1:?'Missing timeout parameters'} ; shift
+    ( pid=$(sh -c 'echo $PPID')
+      ( $no_msg || echo "Command launched with a ${s}s timeout. To let it live: kill $(sh -c 'echo $PPID')"
+        sleep $s
+        kill -9 $pid 2>/dev/null || true
+      ) & "${@:?'Missing timeout command'}"
+    )
+#}
+

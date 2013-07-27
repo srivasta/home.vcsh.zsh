@@ -1,0 +1,53 @@
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# Created On       : Mon Jul 25 15:18:23 2005
+#
+# Copyright © 2005-2010 Manoj Srivastava <srivasta@debian.org>
+
+export default_dir=${default_dir:=$HOME}
+export ZDOTDIR=${ZDOTDIR:=$default_dir/etc/shells/zsh}
+export default_bashdir=${default_bashdir:=$default_dir/etc/shells/bash}
+
+
+if test -z "$WHOAMI"  ; then export WHOAMI=$(whoami); fi
+
+if test -e $HOME/bin/config.guess ; then
+    export MY_SYS_TYPE=`$HOME/bin/config.guess`;
+fi
+
+
+# the difference between `SAVEHIST' and `HISTSIZE' thanks to the
+# FAQ. `HISTSIZE' is the number of lines of history that is kept
+# within any given, running zsh. `SAVEHIST' is the number of lines of
+# history that is written out to a file at the magic, mysterious
+# moment when that event occurs. so cat-ing `HISTFILE' into wc -l
+# should enumerate the number of history events
+
+#              The  maximum  number  of  events  stored in the internal history
+#              list.  If you use  the  HIST_EXPIRE_DUPS_FIRST  option,  setting
+#              this  value larger than the SAVEHIST size will give you the dif-
+#              ference as a cushion for saving duplicated history events.
+HISTSIZE=1000
+SAVEHIST=65536
+#              The file to save the history in when an interactive shell exits.
+#              If unset, the history is not saved.
+HISTFILE=~/var/log/zsh.log
+
+autoload -U $ZDOTDIR/func/*(:t)
+
+# Local Variables: 
+# comment-start: "#" 
+# tab-width: 2 
+# mode: sh
+# End: 

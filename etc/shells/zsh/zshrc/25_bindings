@@ -1,0 +1,378 @@
+#! /bin/zsh -f
+#                               -*- Mode: Sh -*- 
+# bindings --- 
+# Author           : Manoj Srivastava ( srivasta@glaurung.internal.golden-gryphon.com ) 
+# Created On       : Wed Jul 27 07:56:42 2005
+# Created On Node  : glaurung.internal.golden-gryphon.com
+# Last Modified By : Manoj Srivastava
+# Last Modified On : Wed May  7 01:02:32 2008
+# Last Machine Used: anzu.internal.golden-gryphon.com
+# Update Count     : 25
+# Status           : Unknown, Use with caution!
+# HISTORY          : 
+# Description      : 
+# 
+# 
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+# Copyright © 2005-2010 Manoj Srivastava <srivasta@debian.org>
+
+# If running interactively, then:
+if [[ -n "$PS1" ]]; then
+    ## keybindings (run 'bindkeys' for details, more details via man zshzle)
+    # use emacs style per default:
+    bindkey -e
+    # use vi style:
+    # bindkey -v
+
+    bindkey -N mymap emacs
+    bindkey -A mymap main
+
+    #bindkey -m 
+
+    bindkey  '^q'   quoted-insert
+    bindkey  '^X^P' vi-find-prev-char
+    bindkey  '^X^h' describe-key-briefly
+    bindkey  '^X#'  pound-insert
+    bindkey  '^X^W' where-is
+
+    autoload -U select-word-style
+    zle -N select-word-style
+    #select-word-style default
+
+    autoload -U history-pattern-search
+    zle -N history-pattern-search-backward history-pattern-search
+    bindkey "\e^R" history-pattern-search-backward
+
+    zle -N history-pattern-search-forward history-pattern-search
+    bindkey "\e^S" history-pattern-search-forward
+
+    # insert unicode character
+    # usage example: 'ctrl-x i' 00A7 'ctrl-x i' will give you an ï¿½
+    # See for example http://unicode.org/charts/ for unicode characters code
+    autoload insert-unicode-char
+    zle -N insert-unicode-char
+    bindkey '^Xi' insert-unicode-char
+
+    autoload -U incarg
+    zle -N incarg
+    bindkey '^X+' incarg
+
+    # This allows incremental completion of a word.
+    ## After starting this command, a list of completion
+    ## choices can be shown after every character you
+    ## type, which you can delete with ^h or DEL.
+    ## RET will accept the completion so far.
+    ## You can hit TAB to do normal completion, ^g to            
+    ## abort back to the state when you started, and ^d to list the matches. 
+    autoload -U incremental-complete-word
+    zle -N incremental-complete-word
+    bindkey "^Xi" incremental-complete-word # C-x-i
+
+    ## This set of functions implements a sort of magic history searching.
+    ## After predict-on, typing characters causes the editor to look backward
+    ## in the history for the first line beginning with what you have typed so
+    ## far.  After predict-off, editing returns to normal for the line found.
+    ## In fact, you often don't even need to use predict-off, because if the
+    ## line doesn't match something in the history, adding a key performs
+    ## standard completion - though editing in the middle is liable to delete
+    ## the rest of the line.
+    autoload -U predict-on
+    zle -N predict-on
+    zle -N predict-off
+    bindkey '^X^Z' predict-on
+    bindkey '^Z' predict-off
+
+    ## This function allows you type a file pattern,
+    ## and see the results of the expansion at each step.
+    ## When you hit return, they will be inserted into the command line.
+    autoload -U insert-files
+    zle -N insert-files
+    bindkey "^Xf" insert-files # C-x-f
+
+    autoload -U smart-insert-last-word
+    zle -N insert-last-word smart-insert-last-word
+    zle -N insert-last-assignment smart-insert-last-word
+    zstyle :insert-last-assignment match '[[:alpha:]][][[:alnum:]]#=*'
+    bindkey '\e=' insert-last-assignment
+    bindkey "\C-w" kill-region      # Emacs C-w command support
+
+    if [[ "$TERM" != emacs ]] ; then
+        [[ -z "$terminfo[kdch1]" ]] || bindkey -M emacs "$terminfo[kdch1]" delete-char
+        [[ -z "$terminfo[khome]" ]] || bindkey -M emacs "$terminfo[khome]" beginning-of-line
+        [[ -z "$terminfo[kend]"  ]] || bindkey -M emacs "$terminfo[kend]"  end-of-line
+        [[ -z "$terminfo[kdch1]" ]] || bindkey -M vicmd "$terminfo[kdch1]" vi-delete-char
+        [[ -z "$terminfo[khome]" ]] || bindkey -M vicmd "$terminfo[khome]" vi-beginning-of-line
+        [[ -z "$terminfo[kend]"  ]] || bindkey -M vicmd "$terminfo[kend]"  vi-end-of-line
+        [[ -z "$terminfo[cuu1]"  ]] || bindkey -M viins "$terminfo[cuu1]"  vi-up-line-or-history
+        [[ -z "$terminfo[cuf1]"  ]] || bindkey -M viins "$terminfo[cuf1]"  vi-forward-char
+        [[ -z "$terminfo[kcuu1]" ]] || bindkey -M viins "$terminfo[kcuu1]" vi-up-line-or-history
+        [[ -z "$terminfo[kcud1]" ]] || bindkey -M viins "$terminfo[kcud1]" vi-down-line-or-history
+        [[ -z "$terminfo[kcuf1]" ]] || bindkey -M viins "$terminfo[kcuf1]" vi-forward-char
+        [[ -z "$terminfo[kcub1]" ]] || bindkey -M viins "$terminfo[kcub1]" vi-backward-char
+    # ncurses stuff:
+        [[ "$terminfo[kcuu1]" == $'\eO'* ]] && bindkey -M viins "${terminfo[kcuu1]/O/[}" vi-up-line-or-history
+        [[ "$terminfo[kcud1]" == $'\eO'* ]] && bindkey -M viins "${terminfo[kcud1]/O/[}" vi-down-line-or-history
+        [[ "$terminfo[kcuf1]" == $'\eO'* ]] && bindkey -M viins "${terminfo[kcuf1]/O/[}" vi-forward-char
+        [[ "$terminfo[kcub1]" == $'\eO'* ]] && bindkey -M viins "${terminfo[kcub1]/O/[}" vi-backward-char
+        [[ "$terminfo[khome]" == $'\eO'* ]] && bindkey -M viins "${terminfo[khome]/O/[}" beginning-of-line
+        [[ "$terminfo[kend]"  == $'\eO'* ]] && bindkey -M viins "${terminfo[kend]/O/[}"  end-of-line
+        [[ "$terminfo[khome]" == $'\eO'* ]] && bindkey -M emacs "${terminfo[khome]/O/[}" beginning-of-line
+        [[ "$terminfo[kend]"  == $'\eO'* ]] && bindkey -M emacs "${terminfo[kend]/O/[}"  end-of-line
+    fi
+
+    #if [[ "$TERM" == screen ]] ; then
+    bindkey '\e[1~' beginning-of-line       # home
+    bindkey '\e[4~' end-of-line             # end
+    bindkey '\e[A'  up-line-or-search       # cursor up
+    bindkey '\e[B'  down-line-or-search     # <ESC>-
+
+    bindkey '^xp'   history-beginning-search-backward
+    bindkey '^xP'   history-beginning-search-forward
+    # bindkey -s '^L' "|less\n"             # ctrl-L pipes to less
+    # bindkey -s '^B' " &\n"                # ctrl-B runs it in the background
+    # if terminal type is set to 'rxvt':
+    bindkey '\e[7~' beginning-of-line       # home
+    bindkey '\e[8~' end-of-line             # end
+    #fi
+
+    ## beginning-of-line OR beginning-of-buffer OR beginning of history
+    ## by: Bart Schaefer <schaefer@brasslantern.com>, Bernhard Tittelbach
+    beginning-or-end-of-somewhere() {
+        local hno=$HISTNO
+        if [[ ( "${LBUFFER[-1]}" == $'\n' && "${WIDGET}" == beginning-of* ) || \
+            ( "${RBUFFER[1]}" == $'\n' && "${WIDGET}" == end-of* ) ]]; then
+            zle .${WIDGET:s/somewhere/buffer-or-history/} "$@"
+        else
+            zle .${WIDGET:s/somewhere/line-hist/} "$@"
+            if (( HISTNO != hno )); then
+                zle .${WIDGET:s/somewhere/buffer-or-history/} "$@"
+            fi
+        fi
+    }
+    zle -N beginning-of-somewhere beginning-or-end-of-somewhere
+    zle -N end-of-somewhere beginning-or-end-of-somewhere
+
+    #if [[ "$TERM" == screen ]] ; then
+
+    ## with HOME/END, move to beginning/end of line (on multiline) on first keypress
+    ## to beginning/end of buffer on second keypress
+    ## and to beginning/end of history on (at most) the third keypress
+    # terminator & non-debian xterm
+    bindkey '\eOH' beginning-of-somewhere  # home
+    bindkey '\eOF' end-of-somewhere        # end
+    # freebsd console
+    bindkey '\e[H' beginning-of-somewhere   # home
+    bindkey '\e[F' end-of-somewhere         # end
+    # xterm,gnome-terminal,quake,etc
+    bindkey '^[[1~' beginning-of-somewhere  # home
+    bindkey '^[[4~' end-of-somewhere        # end
+    # if terminal type is set to 'rxvt':
+    bindkey '\e[7~' beginning-of-somewhere  # home
+    bindkey '\e[8~' end-of-somewhere        # end
+    #fi
+
+    bindkey '\e[A'  up-line-or-search       # cursor up
+    bindkey '\e[B'  down-line-or-search     # <ESC>-
+
+    ## alt-backspace is already the default for backwards-delete-word
+    ## let's also set alt-delete for deleting current word (right of cursor)
+    #k# Kill right-side word
+    bindkey "3~" delete-word
+
+    ## use Ctrl-left-arrow and Ctrl-right-arrow for jumping to word-beginnings on the CL
+    bindkey "\e[5C" forward-word
+    bindkey "\e[5D" backward-word
+    bindkey "\e[1;5C" forward-word
+    bindkey "\e[1;5D" backward-word
+    ## the same for alt-left-arrow and alt-right-arrow
+    bindkey '^[[1;3C' forward-word
+    bindkey '^[[1;3D' backward-word
+
+    # Search backward in the history for a line beginning with the current
+    # line up to the cursor and move the cursor to the end of the line then
+    zle -N history-beginning-search-backward-end history-search-end
+    zle -N history-beginning-search-forward-end  history-search-end
+    #k# search history backward for entry beginning with typed text
+    bindkey '^xp'   history-beginning-search-backward-end
+    #k# search history forward for entry beginning with typed text
+    bindkey '^xP'   history-beginning-search-forward-end
+    #k# search history backward for entry beginning with typed text
+    bindkey "\e[5~" history-beginning-search-backward-end # PageUp
+    #k# search history forward for entry beginning with typed text
+    bindkey "\e[6~" history-beginning-search-forward-end  # PageDown
+
+    # bindkey -s '^L' "|less\n"             # ctrl-L pipes to less
+    # bindkey -s '^B' " &\n"                # ctrl-B runs it in the background
+
+    #m# k Shift-tab Perform backwards menu completion
+    if [[ -n "$terminfo[kcbt]" ]]; then
+        bindkey "$terminfo[kcbt]" reverse-menu-complete
+    elif [[ -n "$terminfo[cbt]" ]]; then # required for GNU screen
+        bindkey "$terminfo[cbt]"  reverse-menu-complete
+    fi
+
+    ## toggle the ,. abbreviation feature on/off
+    # NOABBREVIATION: default abbreviation-state
+    #                 0 - enabled (default)
+    #                 1 - disabled
+    NOABBREVIATION=${NOABBREVIATION:-0}
+
+    manoj_toggle_abbrev() {
+        if (( ${NOABBREVIATION} > 0 )) ; then
+            NOABBREVIATION=0
+        else
+            NOABBREVIATION=1
+        fi
+    }
+
+    zle -N manoj_toggle_abbrev
+    bindkey '^xA' manoj_toggle_abbrev
+
+    # add a command line to the shells history without executing it
+    commit-to-history() {
+        print -s ${(z)BUFFER}
+        zle send-break
+    }
+    zle -N commit-to-history
+    bindkey "^x^h" commit-to-history
+
+    # only slash should be considered as a word separator:
+    slash-backward-kill-word() {
+        local WORDCHARS="${WORDCHARS:s@/@}"
+        # zle backward-word
+        zle backward-kill-word
+    }
+    zle -N slash-backward-kill-word
+
+    #k# Kill left-side word or everything up to next slash
+    bindkey '\ev' slash-backward-kill-word
+    #k# Kill left-side word or everything up to next slash
+    bindkey '\e^h' slash-backward-kill-word
+    #k# Kill left-side word or everything up to next slash
+    bindkey '\e^?' slash-backward-kill-word
+
+    # power completion - abbreviation expansion {{{
+    # power completion / abbreviation expansion / buffer expansion
+    # see http://zshwiki.org/home/examples/zleiab for details
+    # less risky than the global aliases but powerful as well
+    # just type the abbreviation key and afterwards ',.' to expand it
+    declare -A abk
+    abk=(
+    #   key   # value                  (#d additional doc string)
+    #A# start
+        '...'  '../..'
+        '....' '../../..'
+        'BG'   '& exit'
+        'C'    '| wc -l'
+        'G'    '|& grep --color=auto '
+        'H'    '| head'
+        'Hl'   ' --help |& less -r'    #d (Display help in pager)
+        'L'    '| less'
+        'LL'   '|& less -r'
+        'M'    '| most'
+        'N'    '&>/dev/null'           #d (No Output)
+        'R'    '| tr A-z N-za-m'       #d (ROT13)
+        'SL'   '| sort | less'
+        'S'    '| sort -u'
+        'T'    '| tail'
+        'V'    '|& vim -'
+    #A# end
+        'co'   './configure && make && sudo make install'
+    )
+
+    globalias() {
+        emulate -L zsh
+        setopt extendedglob
+        local MATCH
+
+        if (( NOABBREVIATION > 0 )) ; then
+            LBUFFER="${LBUFFER},."
+            return 0
+        fi
+
+        matched_chars='[.-|_a-zA-Z0-9]#'
+        LBUFFER=${LBUFFER%%(#m)[.-|_a-zA-Z0-9]#}
+        LBUFFER+=${abk[$MATCH]:-$MATCH}
+    }
+
+    zle -N globalias
+    bindkey ",." globalias
+
+    # press "ctrl-e d" to insert the actual date in the form yyyy-mm-dd
+    insert-datestamp() { LBUFFER+=${(%):-'%D{%Y-%m-%d}'}; }
+    zle -N insert-datestamp
+
+    #k# Insert a timestamp on the command line (yyyy-mm-dd)
+    bindkey '^Ed' insert-datestamp
+
+    # press esc-m for inserting last typed word again (thanks to caphuso!)
+    insert-last-typed-word() { zle insert-last-word -- 0 -1 };
+    zle -N insert-last-typed-word;
+
+    #k# Insert last typed word
+    bindkey "\em" insert-last-typed-word
+
+    # run command line as user root via sudo:
+    sudo-command-line() {
+        [[ -z $BUFFER ]] && zle up-history
+        if [[ $BUFFER != sudo\ * ]]; then
+            BUFFER="sudo $BUFFER"
+            CURSOR=$(( CURSOR+5 ))
+        fi
+    }
+    zle -N sudo-command-line
+
+    #k# prepend the current command with "sudo"
+    bindkey "^Os" sudo-command-line
+
+    ### jump behind the first word on the cmdline.
+    ### useful to add options.
+    function jump_after_first_word() {
+        local words
+        words=(${(z)BUFFER})
+
+        if (( ${#words} <= 1 )) ; then
+            CURSOR=${#BUFFER}
+        else
+            CURSOR=${#${words[1]}}
+        fi
+    }
+    zle -N jump_after_first_word
+    #k# jump to after first word (for adding options)
+    bindkey '^x1' jump_after_first_word
+
+    # complete word from history with menu (from Book: ZSH, OpenSource-Press)
+    zle -C hist-complete complete-word _generic
+    zstyle ':completion:hist-complete:*' completer _history
+    #k# complete word from history with menu
+    bindkey "^X^X" hist-complete
+
+
+    ## This is a multiple move based on zsh pattern matching.  To get the full
+    ## power of it, you need a postgraduate degree in zsh.
+    ## Read /path_to_zsh_functions/zmv for some basic examples.
+    #autoload -U zmv
+
+    autoload -U zfinit
+    zfinit
+
+fi
+
+# Local Variables: 
+# comment-start: "#" 
+# tab-width: 2 
+# mode: sh
+# End: 

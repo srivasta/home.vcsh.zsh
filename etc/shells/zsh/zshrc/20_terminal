@@ -1,0 +1,54 @@
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# Created On       : Mon Jul 25 15:18:23 2005
+#
+# Copyright © 2005-2010 Manoj Srivastava <srivasta@debian.org>
+
+if [[ -n "$PS1" ]]; then
+    # Set the terminal type
+    autoload -U sterm && sterm
+    set noglob; eval `resize`; unset noglob; reset
+    case "$MY_SYS_TYPE" in
+        hppa1.1-hp-hpux*)
+            stty intr ^c
+           ;;
+        mips-dec-ultrix*)
+            ;;
+        alpha-dec-osf*)
+            if test "$TERM" = "xterm" ; then
+                if test -x /usr/bin/stty -a -f "$default_dir/etc/stty" ; then
+                    /usr/bin/stty `cat "$default_dir/etc/stty"` >& /dev/null
+                fi
+            else
+                stty intr ^c
+            fi
+            ;;
+        *)
+            ;;
+    esac
+fi
+
+if [ "$TERM" = "xterm" ] || [ "$TERM" = "xterm-256color" ] ||
+    [ "$TERM" = "linux" ]; then
+    export COLORTERM=y
+    if [[ -r $HOME/etc/dir_colors ]]; then
+        check_com -c dircolors && eval $(dircolors -b $HOME/etc/dir_colors);
+    fi    
+fi
+
+# Local Variables: 
+# comment-start: "#" 
+# tab-width: 2 
+# mode: sh
+# End: 

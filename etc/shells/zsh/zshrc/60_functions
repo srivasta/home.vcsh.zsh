@@ -1,0 +1,1009 @@
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# Created On       : Mon Jul 25 15:18:23 2005
+#
+# Copyright © 2005-2010 Manoj Srivastava <srivasta@debian.org>
+
+# If running interactively, then:
+if [[ -n "$PS1" ]]; then
+    # Reload an autoloadable function
+    freload() { while (( $# )); do; unfunction $1; autoload -U $1; shift; done }
+    # Provide csh compatibility
+    setenv()  { typeset -x "${1}${1:+=}${(@)argv[2,$#]}" }
+
+    if check_com -c $PAGER ; then
+    #f1# View Debian's changelog of a given package
+        dchange() {
+            if [[ -r /usr/share/doc/${1}/changelog.Debian.gz ]] ; then
+                $PAGER /usr/share/doc/${1}/changelog.Debian.gz
+            elif [[ -r /usr/share/doc/${1}/changelog.gz ]] ; then
+                $PAGER /usr/share/doc/${1}/changelog.gz
+            else
+                if check_com -c aptitude ; then
+                    echo "No changelog for package $1 found, using aptitude to retrieve it."
+                    if isgrml ; then
+                        aptitude -t unstable changelog ${1}
+                    else
+                        aptitude changelog ${1}
+                    fi
+                else
+                    echo "No changelog for package $1 found, sorry."
+                    return 1
+                fi
+            fi
+        }
+        _dchange() { _files -W /usr/share/doc -/ }
+        compdef _dchange dchange
+
+    #f1# View Debian's NEWS of a given package
+        dnews() {
+            if [[ -r /usr/share/doc/${1}/NEWS.Debian.gz ]] ; then
+                $PAGER /usr/share/doc/${1}/NEWS.Debian.gz
+            else
+                if [[ -r /usr/share/doc/${1}/NEWS.gz ]] ; then
+                    $PAGER /usr/share/doc/${1}/NEWS.gz
+                else
+                    echo "No NEWS file for package $1 found, sorry."
+                    return 1
+                fi
+            fi
+        }
+        _dnews() { _files -W /usr/share/doc -/ }
+        compdef _dnews dnews
+
+    #f1# View upstream's changelog of a given package
+        uchange() {
+            if [[ -r /usr/share/doc/${1}/changelog.gz ]] ; then
+                $PAGER /usr/share/doc/${1}/changelog.gz
+            else
+                echo "No changelog for package $1 found, sorry."
+                return 1
+            fi
+        }
+        _uchange() { _files -W /usr/share/doc -/ }
+        compdef _uchange uchange
+    fi
+
+    src ()
+    {
+        autoload -U zrecompile
+        [ -f $ZDOTDIR/.zshrc ] && zrecompile -p $ZDOTDIR/.zshrc
+        [ -f $ZDOTDIR/.zcompdump ] && zrecompile -p $ZDOTDIR/.zcompdump
+        [ -f $ZDOTDIR/.zshrc.zwc.old ] && rm -f $ZDOTDIR/.zshrc.zwc.old
+        [ -f $ZDOTDIR/.zcompdump.zwc.old ] && rm -f $ZDOTDIR/.zcompdump.zwc.old
+        myfpath=( $ZDOTDIR/func )
+        for ((i=1; i <= $#myfpath; ++i)); do
+            dir=$myfpath[i]
+            zwc=${dir:t}.zwc
+            if [[ $dir == (.|..) || $dir == (.|..)/* ]]; then
+                continue
+            fi
+            files=($dir/*(N-.))
+            if [[ -w $dir:h && -n $files ]]; then
+                files=(${${(M)files%/*/*}#/})
+                if ( builtin cd $dir:h &&
+                        zrecompile -p -U -z $zwc $files ); then
+                    myfpath[i]=$myfpath[i].zwc
+                fi
+            fi
+        done
+        source $ZDOTDIR/.zshrc
+    }
+
+    # searching
+    #f4# Search for newspostings from authors
+    agoogle() { ${=BROWSER} "http://groups.google.com/groups?as_uauthors=$*" ; }
+    #f4# Search Debian Bug Tracking System
+    debbug()  {
+        emulate -L zsh
+        setopt extendedglob
+        if [[ $# -eq 1 ]]; then
+            case "$1" in
+                ([0-9]##)
+                ${=BROWSER} "http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=$1"
+                ;;
+                (*@*)
+                ${=BROWSER} "http://bugs.debian.org/cgi-bin/pkgreport.cgi?submitter=$1"
+                ;;
+                (*)
+                ${=BROWSER} "http://bugs.debian.org/$*"
+                ;;
+            esac
+        else
+            print "$0 needs one argument"
+            return 1
+        fi
+    }
+    #f4# Search Debian Bug Tracking System in mbox format
+    debbugm() {
+        emulate -L zsh
+        bts show --mbox $1
+    }
+    #f4# Search English  Wiktionary
+    ewicti()  {
+        emulate -L zsh
+        ${=BROWSER} http://en.wiktionary.org/wiki/${(C)1// /_}
+    }
+    #f4# Search Google Groups
+    ggogle()  {
+        emulate -L zsh
+        ${=BROWSER} "http://groups.google.com/groups?q=$*"
+    }
+    #f4# Search Google
+    google()  {
+        emulate -L zsh
+        ${=BROWSER} "http://www.google.com/search?&num=100&q=$*"
+    }
+    #f4# Search Google Groups for MsgID
+    mggogle() {
+        emulate -L zsh
+        ${=BROWSER} "http://groups.google.com/groups?selm=$*"
+    }
+    #f4# Search English  Wikipedia
+    wikien()  {
+        emulate -L zsh
+        ${=BROWSER} http://en.wikipedia.org/wiki/"${(C)*}"
+    }
+    #f4# Search official debs
+    wodeb()   {
+        emulate -L zsh
+        ${=BROWSER} "http://packages.debian.org/search?keywords=$1&searchon=contents&suite=${2:=unstable}&section=all"
+    }
+
+    #m# f4 gex() Exact search via Google
+    check_com google && gex () {
+        google "\"[ $1]\" $*"
+    }
+
+    # misc
+    #f5# Backup \kbd{file {\rm to} file\_timestamp}
+    bk() {
+        emulate -L zsh
+        cp -b $1 $1_`date --iso-8601=m`
+    }
+    #f5# Copied diff
+    cdiff() {
+        emulate -L zsh
+        diff -crd "$@" | egrep -v "^Only in |^Binary files "
+    }
+
+    #f5# Disassemble source files using gcc and as
+    disassemble(){
+        emulate -L zsh
+        gcc -pipe -S -o - -O -g $* | as -aldh -o /dev/null
+    }
+    #f5# Firefox remote control - open given URL
+    fir() {
+        if [ -e /etc/debian_version ]; then
+            firefox -a iceweasel -remote "openURL($1)" || firefox ${1}&
+        else
+            firefox -a firefox -remote "openURL($1)" || firefox ${1}&
+        fi
+    }
+    #f5# Create temporary directory and \kbd{cd} to it
+    cdt() {
+        local t
+        t=$(mktemp -d)
+        echo "$t"
+        builtin cd "$t"
+    }
+    #f5# Unified diff to timestamped outputfile
+    mdiff() {
+        diff -udrP "$1" "$2" > diff.`date "+%Y-%m-%d"`."$1"
+    }
+
+    #f5# Create directory under cursor or the selected area
+    # Press ctrl-xM to create the directory under the cursor or the selected area.
+    # To select an area press ctrl-@ or ctrl-space and use the cursor.
+    # Use case: you type "mv abc ~/testa/testb/testc/" and remember that the
+    # directory does not exist yet -> press ctrl-XM and problem solved
+    inplaceMkDirs() {
+        local PATHTOMKDIR
+        if ((REGION_ACTIVE==1)); then
+            local F=$MARK T=$CURSOR
+            if [[ $F -gt $T ]]; then
+                F=${CURSOR}
+                T=${MARK}
+            fi
+            # get marked area from buffer and eliminate whitespace
+            PATHTOMKDIR=${BUFFER[F+1,T]%%[[:space:]]##}
+            PATHTOMKDIR=${PATHTOMKDIR##[[:space:]]##}
+        else
+            local bufwords iword
+            bufwords=(${(z)LBUFFER})
+            iword=${#bufwords}
+            bufwords=(${(z)BUFFER})
+            PATHTOMKDIR="$bufwords[iword]"
+        fi
+        [[ -z "${PATHTOMKDIR}" ]] && return 1
+        if [[ -e "${PATHTOMKDIR}" ]]; then
+            zle -M " path already exists, doing nothing"
+        else
+            zle -M "$(mkdir -p -v "${PATHTOMKDIR}")"
+            zle end-of-line
+        fi
+    }
+    #k# mkdir -p <dir> from string under cursor or marked area
+    zle -N inplaceMkDirs && bindkey '^XM' inplaceMkDirs
+
+    #f5# Memory overview
+    memusage() {
+        ps aux | awk '{if (NR > 1) print $5; if (NR > 2) print "+"} END { print "p" }' | dc
+    }
+    # Function Usage: uopen $URL/$file
+    #f5# Download a file and display it locally
+    uopen() {
+        emulate -L zsh
+        if ! [[ -n "$1" ]] ; then
+            print "Usage: uopen \$URL/\$file">&2
+            return 1
+        else
+            FILE=$1
+            MIME=$(curl --head $FILE | grep Content-Type | cut -d ' ' -f 2 | cut -d\; -f 1)
+            MIME=${MIME%$'\r'}
+            curl $FILE | see ${MIME}:-
+        fi
+    }
+
+    #f5# Unified diff
+    udiff() {
+        emulate -L zsh
+        diff -urd $* | egrep -v "^Only in |^Binary files "
+    }
+
+    # Function Usage: doc packagename
+    #f5# \kbd{cd} to /usr/share/doc/\textit{package}
+    doc() {
+        emulate -L zsh
+        cd /usr/share/doc/$1 && ls
+    }
+    _doc() { _files -W /usr/share/doc -/ }
+    check_com compdef && compdef _doc doc
+    # list images only
+    limg() {
+        local -a images
+        images=( *.{jpg,gif,png}(.N) )
+
+        if [[ $#images -eq 0 ]] ; then
+            print "No image files found"
+        else
+            ls "$images[@]"
+        fi
+    }
+
+    #f5# Create PDF file from source code
+    makereadable() {
+        emulate -L zsh
+        output=$1
+        shift
+        a2ps --medium A4dj -E -o $output $*
+        ps2pdf $output
+    }
+
+    # zsh with perl-regex - use it e.g. via:
+    # regcheck '\s\d\.\d{3}\.\d{3} Euro' ' 1.000.000 Euro'
+    #f5# Checks whether a regex matches or not.\\&\quad Example: \kbd{regcheck '.\{3\} EUR' '500 EUR'}
+    regcheck() {
+        emulate -L zsh
+        zmodload -i zsh/pcre
+        pcre_compile $1 && \
+        pcre_match $2 && echo "regex matches" || echo "regex does not match"
+    }
+    (grep --help 2>/dev/null |grep -- --color) >/dev/null && alias grep='grep --color=auto'
+
+    # usage example: 'lcheck strcpy'
+    #f5# Find out which libs define a symbol
+    lcheck() {
+        if [[ -n "$1" ]] ; then
+            nm -go /usr/lib/lib*.a 2>/dev/null | grep ":[[:xdigit:]]\{8\} . .*$1"
+        else
+            echo "Usage: lcheck <function>" >&2
+        fi
+    }
+
+
+    #f5# List files which have been accessed within the last {\it n} days, {\it n} defaults to 1
+    accessed() {
+        emulate -L zsh
+        print -l -- *(a-${1:-1})
+    }
+
+    #f5# List files which have been changed within the last {\it n} days, {\it n} defaults to 1
+    changed() {
+        emulate -L zsh
+        print -l -- *(c-${1:-1})
+    }
+
+    #f5# List files which have been modified within the last {\it n} days, {\it n} defaults to 1
+    modified() {
+        emulate -L zsh
+        print -l -- *(m-${1:-1})
+    }
+
+    #f5# Grep in history
+    greph() {
+        emulate -L zsh
+        history 0 | grep $1
+    }
+    # use colors when GNU grep with color-support
+    #a2# Execute \kbd{grep -{}-color=auto}
+    (grep --help 2>/dev/null |grep -- --color) >/dev/null && alias grep='grep --color=auto'
+    #a2# Execute \kbd{grep -i -{}-color=auto}
+    alias GREP='grep -i --color=auto'
+
+    #f5# Watch manpages in a stretched style
+    man2() { PAGER='dash -c "sed G | /usr/bin/less"' command man "$@" ; }
+
+
+    #f5# Clean up directory - remove well known tempfiles
+    purge() {
+        emulate -L zsh
+        setopt HIST_SUBST_PATTERN
+        local -a TEXTEMPFILES GHCTEMPFILES PYTEMPFILES FILES
+        TEXTEMPFILES=(*.tex(N:s/%tex/'(log|toc|aux|nav|snm|out|tex.backup|bbl|blg|bib.backup|vrb|lof|lot|hd|idx)(N)'/))
+        GHCTEMPFILES=(*.(hs|lhs)(N:r:s/%/'.(hi|hc|(p|u|s)_(o|hi))(N)'/))
+        PYTEMPFILES=(*.py(N:s/%py/'(pyc|pyo)(N)'/))
+        LONELY_MOOD_FILES=((*.mood)(NDe:'local -a AF;AF=( ${${REPLY#.}%mood}(mp3|flac|ogg|asf|wmv|aac)(N) ); [[ -z "$AF" ]]':))
+        FILES=(*~(.N) \#*\#(.N) *.o(.N) a.out(.N) (*.|)core(.N) *.cmo(.N) *.cmi(.N) .*.swp(.N) *.(orig|rej)(.DN) *.dpkg-(old|dist|new)(DN) ._(cfg|mrg)[0-9][0-9][0-9][0-9]_*(N) ${~TEXTEMPFILES} ${~GHCTEMPFILES} ${~PYTEMPFILES} ${LONELY_MOOD_FILES})
+        local NBFILES=${#FILES}
+        local CURDIRSUDO=""
+        [[ ! -w ./ ]] && CURDIRSUDO=$SUDO
+        if [[ $NBFILES > 0 ]] ; then
+            print -l $FILES
+            local ans
+            echo -n "Remove these files? [y/n] "
+            read -q ans
+            if [[ $ans == "y" ]] ; then
+                $CURDIRSUDO rm ${FILES}
+                echo ">> $PWD purged, $NBFILES files removed"
+            else
+                echo "Ok. .. then not.."
+            fi
+        fi
+    }   
+
+
+    #f5# show labels and uuids of disk devices
+    if [[ -d /dev/disk/by-id/ ]]; then
+        lsdisk() {
+            emulate -L zsh
+            setopt extendedglob
+            local -a -U disks
+            disks=( /dev/disk/by-id/*(@:A) )
+            for dev in "$disks[@]"; do
+                print ${fg_bold[red]}${dev}${reset_color} /dev/disk/by-label/*(@e/'[[ ${REPLY:A} == $dev ]] && REPLY=${fg[blue]}LABEL=${REPLY:t}${reset_color}'/N) /dev/disk/by-uuid/*(@e/'[[ ${REPLY:A} == $dev ]] && REPLY=${fg[green]}UUID=${REPLY:t}${reset_color}'/N)
+                print -f "  %s\n" /dev/disk/by-id/*(@e/'[[ ${REPLY:A} == $dev ]]'/N:t)
+            done
+        }
+    fi
+
+
+    #f5# run command or function in a list of directories
+    rundirs() {
+        local d CMD STARTDIR=$PWD
+        CMD=$1; shift
+        ( for d ($@) {cd -q $d && { print cd $d; ${(z)CMD} ; cd -q $STARTDIR }} )
+    }
+
+    #f5# List all occurrences of programm in current PATH
+    plap() {
+        emulate -L zsh
+        if [[ $# = 0 ]] ; then
+            echo "Usage:    $0 program"
+            echo "Example:  $0 zsh"
+            echo "Lists all occurrences of program in the current PATH."
+        else
+            ls -l ${^path}/*$1*(*N)
+        fi
+    }
+
+    # Found in the mailinglistarchive from Zsh (IIRC ~1996)
+    #f5# Select items for specific command(s) from history
+    selhist() {
+        emulate -L zsh
+        local TAB=$'\t';
+        (( $# < 1 )) && {
+            echo "Usage: $0 command"
+            return 1
+        };
+        cmd=(${(f)"$(grep -w $1 $HISTFILE | sort | uniq | pr -tn)"})
+        print -l $cmd | less -F
+        echo -n "enter number of desired command [1 - $(( ${#cmd[@]} - 1 ))]: "
+        local answer
+        read answer
+        print -z "${cmd[$answer]#*$TAB}"
+    }
+
+    # function readme() { $PAGER -- (#ia3)readme* }
+    #f5# View all README-like files in current directory in pager
+    readme() {
+        emulate -L zsh
+        local files
+        files=(./(#i)*(read*me|lue*m(in|)ut)*(ND))
+        if (($#files)) ; then
+            $PAGER $files
+        else
+            print 'No README files.'
+        fi
+    }
+
+    # function ansi-colors()
+    #f5# Display ANSI colors
+    ansi-colors() {
+        typeset esc="\033[" line1 line2
+        echo " _ _ _40 _ _ _41_ _ _ _42 _ _ 43_ _ _ 44_ _ _45 _ _ _ 46_ _ _ 47_ _ _ 49_ _"
+        for fore in 30 31 32 33 34 35 36 37; do
+            line1="$fore "
+            line2="   "
+            for back in 40 41 42 43 44 45 46 47 49; do
+                line1="${line1}${esc}${back};${fore}m Normal ${esc}0m"
+                line2="${line2}${esc}${back};${fore};1m Bold   ${esc}0m"
+            done
+            echo -e "$line1\n$line2"
+        done
+    }
+
+    #f5# Find all files in \$PATH with setuid bit set
+    suidfind() { ls -latg $path | grep '^...s' }
+
+
+    #f5# Reload given functions
+     refunc() {
+         for func in $argv ; do
+             unfunction $func
+             autoload $func
+         done
+     }
+     compdef _functions refunc
+     
+     # a small check to see which DIR is located on which server/partition.
+     # stolen and modified from Sven's zshrc.forall
+     #f5# Report diskusage of a directory
+     dirspace() {
+         emulate -L zsh
+         if [[ -n "$1" ]] ; then
+             for dir in "$@" ; do
+                 if [[ -d "$dir" ]] ; then
+                     ( cd $dir; echo "-<$dir>"; du -shx .; echo);
+                 else
+                     echo "warning: $dir does not exist" >&2
+                 fi
+             done
+         else
+             for dir in $path; do
+                 if [[ -d "$dir" ]] ; then
+                     ( cd $dir; echo "-<$dir>"; du -shx .; echo);
+                 else
+                     echo "warning: $dir does not exist" >&2
+                 fi
+             done
+         fi
+     }
+     
+     # % slow_print `cat /etc/passwd`
+     #f5# Slowly print out parameters
+     slow_print() {
+         for argument in "$@" ; do
+             for ((i = 1; i <= ${#1} ;i++)) ; do
+                 print -n "${argument[i]}"
+                 sleep 0.08
+             done
+             print -n " "
+         done
+         print ""
+     }
+
+    #f5# Show some status info
+    status() {
+        print
+        print "Date..: "$(date "+%Y-%m-%d %H:%M:%S")
+        print "Shell.: Zsh $ZSH_VERSION (PID = $$, $SHLVL nests)"
+        print "Term..: $TTY ($TERM), ${BAUD:+$BAUD bauds, }$COLUMNS x $LINES chars"
+        print "Login.: $LOGNAME (UID = $EUID) on $HOST"
+        print "System: $(cat /etc/[A-Za-z]*[_-][rv]e[lr]*)"
+        print "Uptime:$(uptime)"
+        print
+    }
+
+    # Rip an audio CD
+    #f5# Rip an audio CD
+    audiorip() {
+        mkdir -p ~/ripps
+        cd ~/ripps
+        cdrdao read-cd --device $DEVICE --driver generic-mmc audiocd.toc
+        cdrdao read-cddb --device $DEVICE --driver generic-mmc audiocd.toc
+        echo " * Would you like to burn the cd now? (yes/no)"
+        read input
+        if [[ "$input" = "yes" ]] ; then
+            echo " ! Burning Audio CD"
+            audioburn
+            echo " * done."
+        else
+            echo " ! Invalid response."
+        fi
+    }
+
+    # and burn it
+    #f5# Burn an audio CD (in combination with audiorip)
+    audioburn() {
+        cd ~/ripps
+        cdrdao write --device $DEVICE --driver generic-mmc audiocd.toc
+        echo " * Should I remove the temporary files? (yes/no)"
+        read input
+        if [[ "$input" = "yes" ]] ; then
+            echo " ! Removing Temporary Files."
+            cd ~
+            rm -rf ~/ripps
+            echo " * done."
+        else
+            echo " ! Invalid response."
+        fi
+    }
+
+    #f5# Make an audio CD from all mp3 files
+    mkaudiocd() {
+        # TODO: do the renaming more zshish, possibly with zmv()
+        emulate -L zsh
+        cd ~/ripps
+        for i in *.[Mm][Pp]3; do mv "$i" `echo $i | tr '[A-Z]' '[a-z]'`; done
+        for i in *.mp3; do mv "$i" `echo $i | tr ' ' '_'`; done
+        for i in *.mp3; do mpg123 -w `basename $i .mp3`.wav $i; done
+        normalize -m *.wav
+        for i in *.wav; do sox $i.wav -r 44100 $i.wav resample; done
+    }
+
+    #f5# Create an ISO image. You are prompted for\\&\quad volume name, filename and directory
+    mkiso() {
+        emulate -L zsh
+        echo " * Volume name "
+        read volume
+        echo " * ISO Name (ie. tmp.iso)"
+        read iso
+        echo " * Directory or File"
+        read files
+        mkisofs -o ~/$iso -A $volume -allow-multidot -J -R -iso-level 3 -V $volume -R $files
+    }
+
+    #f5# Simple thumbnails generator
+    genthumbs() {
+        rm -rf thumb-* index.html
+        echo "
+    <html>
+      <head>
+        <title>Images</title>
+      </head>
+      <body>" > index.html
+        for f in *.(gif|jpeg|jpg|png) ; do
+            convert -size 100x200 "$f" -resize 100x200 thumb-"$f"
+            echo "    <a href=\"$f\"><img src=\"thumb-$f\"></a>" >> index.html
+        done
+        echo "
+      </body>
+    </html>" >> index.html
+    }
+
+    #f5# Set all ulimit parameters to \kbd{unlimited}
+    allulimit() {
+        ulimit -c unlimited
+        ulimit -d unlimited
+        ulimit -f unlimited
+        ulimit -l unlimited
+        ulimit -n unlimited
+        ulimit -s unlimited
+        ulimit -t unlimited
+    }
+
+    # 2mp3 transcodes flac and ogg to mp3 with bitrate of 192 while preserving basic tags
+    if check_com lame; then
+        2mp3_192() {
+            emulate -L zsh
+            setopt extendedglob
+            unsetopt ksharrays
+
+            local -a DECODE id3tags
+            local -A tagmap
+            local tagdata
+            local RC=0
+            tagmap=("(#l)title" --tt "(#l)artist" --ta "(#l)tracknumber" --tn "(#l)genre" --tg "(#l)album" --tl)
+
+            if [[ ${@[(i)*.ogg]} -le ${#@} ]] && ! check_com oggdec; then
+                echo "ERROR: please install oggdec" >&2
+                return 1
+            fi
+            if [[ ${@[(i)*.flac]} -le ${#@} ]] && ! check_com flac; then
+                echo "ERROR: please install flac" >&2
+                return 1
+            fi
+
+            for af in "$@"; do
+                id3tags=()
+                case "$af" in
+                    (*.flac)
+                        DECODE=(flac -d -c "$af")
+                        tagdata="$(metaflac --export-tags-to=- "$af")"
+                        ;;
+                    (*.ogg)
+                        DECODE=(oggdec -Q -o - "$af")
+                        tagdata="$(ogginfo "$af")"
+                        ;;
+                    (*) continue ;;
+                esac
+                for line (${(f)tagdata}) \
+                    [[ "$line" == (#s)[[:space:]]#(#b)([^=]##)=(*)(#e) && -n $tagmap[(k)$match[1]] ]] && \
+                    id3tags+=($tagmap[(k)$match[1]] "$match[2]")
+                [[ ${#id3tags} -gt 0 ]] && id3tags=(--add-id3v2 --ignore-tag-errors $id3tags)
+                $DECODE[*] | lame -b 192 -v -h --replaygain-fast  "${id3tags[@]}" - "${af:r}.mp3" || {RC=$?; print "Error transcoding" "${af}"; }
+            done
+            # return 0 if no error or exit code if at least one error happened
+            return $RC
+        }
+        alias ogg2mp3_192 2mp3_192
+    fi
+
+    #f5# RFC 2396 URL encoding in Z-Shell
+    urlencode() {
+        emulate -L zsh
+        setopt extendedglob
+        input=( ${(s::)1} )
+        print ${(j::)input/(#b)([^A-Za-z0-9_.!~*\'\(\)-])/%${(l:2::0:)$(([##16]#match))}}
+    }
+
+    # http://strcat.de/blog/index.php?/archives/335-Software-sauber-deinstallieren...html
+    #f5# Log 'make install' output
+    mmake() {
+        emulate -L zsh
+        [[ ! -d ~/.errorlogs ]] && mkdir ~/.errorlogs
+        make -n install > ~/.errorlogs/${PWD##*/}-makelog
+    }
+
+    #f5# Indent source code
+    smart-indent() {
+        indent -npro -kr -i8 -ts8 -sob -l80 -ss -ncs "$@"
+    }
+
+    # highlight important stuff in diff output, usage example: hg diff | hidiff
+    #m# a2 hidiff \kbd{histring} oneliner for diffs
+    check_com -c histring && \
+        alias hidiff="histring -fE '^Comparing files .*|^diff .*' | histring -c yellow -fE '^\-.*' | histring -c green -fE '^\+.*'"
+
+    # rename pictures based on information found in exif headers
+    #f5# Rename pictures based on information found in exif headers
+    exirename() {
+        emulate -L zsh
+        if [[ $# -lt 1 ]] ; then
+            echo 'Usage: jpgrename $FILES' >& 2
+            return 1
+        else
+            echo -n 'Checking for jhead with version newer than 1.9: '
+            jhead_version=`jhead -h | grep 'used by most Digital Cameras.  v.*' | awk '{print $6}' | tr -d v`
+            if [[ $jhead_version > '1.9' ]]; then
+                echo 'success - now running jhead.'
+                jhead -n%Y-%m-%d_%Hh%M_%f $*
+            else
+                echo 'failed - exiting.'
+            fi
+        fi
+    }
+
+    # get_ic() - queries imap servers for capabilities; real simple. no imaps
+    ic_get() {
+        emulate -L zsh
+        local port
+        if [[ ! -z $1 ]] ; then
+            port=${2:-143}
+            print "querying imap server on $1:${port}...\n";
+            print "a1 capability\na2 logout\n" | nc $1 ${port}
+        else
+            print "usage:\n  $0 <imap-server> [port]"
+        fi
+    }
+
+    # creates a Maildir/ with its {new,cur,tmp} subdirs
+    mkmaildir() {
+        emulate -L zsh
+        local root subdir
+        root=${MAILDIR_ROOT:-${HOME}/Mail}
+        if [[ -z ${1} ]] ; then print "Usage:\n $0 <dirname>" ; return 1 ; fi
+        subdir=${1}
+        mkdir -p ${root}/${subdir}/{cur,new,tmp}
+    }
+
+
+    #
+    #f5# Change the xterm title from within GNU-screen
+    xtrename() {
+        emulate -L zsh
+        if [[ $1 != "-f" ]] ; then
+            if [[ -z ${DISPLAY} ]] ; then
+                printf 'xtrename only makes sense in X11.\n'
+                return 1
+            fi
+        else
+            shift
+        fi
+        if [[ -z $1 ]] ; then
+            printf 'usage: xtrename [-f] "title for xterm"\n'
+            printf '  renames the title of xterm from _within_ screen.\n'
+            printf '  also works without screen.\n'
+            printf '  will not work if DISPLAY is unset, use -f to override.\n'
+            return 0
+        fi
+        print -n "\eP\e]0;${1}\C-G\e\\"
+        return 0
+    }
+
+
+    # hl() highlighted less
+    # http://ft.bewatermyfriend.org/comp/data/zsh/zfunct.html
+    if check_com -c highlight ; then
+        function hl() {
+        emulate -L zsh
+            local theme lang
+            theme=${HL_THEME:-""}
+            case ${1} in
+                (-l|--list)
+                    ( printf 'available languages (syntax parameter):\n\n' ;
+                        highlight --list-langs ; ) | less -SMr
+                    ;;
+                (-t|--themes)
+                    ( printf 'available themes (style parameter):\n\n' ;
+                        highlight --list-themes ; ) | less -SMr
+                    ;;
+                (-h|--help)
+                    printf 'usage: hl <syntax[:theme]> <file>\n'
+                    printf '    available options: --list (-l), --themes (-t), --help (-h)\n\n'
+                    printf '  Example: hl c main.c\n'
+                    ;;
+                (*)
+                    if [[ -z ${2} ]] || (( ${#argv} > 2 )) ; then
+                        printf 'usage: hl <syntax[:theme]> <file>\n'
+                        printf '    available options: --list (-l), --themes (-t), --help (-h)\n'
+                        (( ${#argv} > 2 )) && printf '  Too many arguments.\n'
+                        return 1
+                    fi
+                    lang=${1%:*}
+                    [[ ${1} == *:* ]] && [[ -n ${1#*:} ]] && theme=${1#*:}
+                    if [[ -n ${theme} ]] ; then
+                        highlight -O xterm256 --syntax ${lang} --style ${theme} ${2} | less -SMr
+                    else
+                        highlight -O ansi --syntax ${lang} ${2} | less -SMr
+                    fi
+                    ;;
+            esac
+            return 0
+        }
+        # ... and a proper completion for hl()
+        # needs 'highlight' as well, so it fits fine in here.
+        function _hl_genarg()  {
+            local expl
+            if [[ -prefix 1 *: ]] ; then
+                local themes
+                themes=(${${${(f)"$(LC_ALL=C highlight --list-themes)"}/ #/}:#*(Installed|Use name)*})
+                compset -P 1 '*:'
+                _wanted -C list themes expl theme compadd ${themes}
+            else
+                local langs
+                langs=(${${${(f)"$(LC_ALL=C highlight --list-langs)"}/ #/}:#*(Installed|Use name)*})
+                _wanted -C list languages expl languages compadd -S ':' -q ${langs}
+            fi
+        }
+        function _hl_complete() {
+            _arguments -s '1: :_hl_genarg' '2:files:_path_files'
+        }
+        compdef _hl_complete hl
+    fi
+
+
+    #f2# Print a specific line of file(s).
+    linenr () {
+    # {{{
+        emulate -L zsh
+        if [ $# -lt 2 ] ; then
+           print "Usage: linenr <number>[,<number>] <file>" ; return 1
+        elif [ $# -eq 2 ] ; then
+             local number=$1
+             local file=$2
+             command ed -s $file <<< "${number}n"
+        else
+             local number=$1
+             shift
+             for file in "$@" ; do
+                 if [ ! -d $file ] ; then
+                    echo "${file}:"
+                    command ed -s $file <<< "${number}n" 2> /dev/null
+                 else
+                    continue
+                 fi
+             done | less
+        fi
+    # }}}
+    }
+
+    #f2# Find history events by search pattern and list them by date.
+    whatwhen()  {
+    # {{{
+        emulate -L zsh
+        local usage help ident format_l format_s first_char remain first last
+        usage='USAGE: whatwhen [options] <searchstring> <search range>'
+        help='Use `whatwhen -h'\'' for further explanations.'
+        ident=${(l,${#${:-Usage: }},, ,)}
+        format_l="${ident}%s\t\t\t%s\n"
+        format_s="${format_l//(\\t)##/\\t}"
+        # Make the first char of the word to search for case
+        # insensitive; e.g. [aA]
+        first_char=[${(L)1[1]}${(U)1[1]}]
+        remain=${1[2,-1]}
+        # Default search range is `-100'.
+        first=${2:-\-100}
+        # Optional, just used for `<first> <last>' given.
+        last=$3
+        case $1 in
+            ("")
+                printf '%s\n\n' 'ERROR: No search string specified. Aborting.'
+                printf '%s\n%s\n\n' ${usage} ${help} && return 1
+            ;;
+            (-h)
+                printf '%s\n\n' ${usage}
+                print 'OPTIONS:'
+                printf $format_l '-h' 'show help text'
+                print '\f'
+                print 'SEARCH RANGE:'
+                printf $format_l "'0'" 'the whole history,'
+                printf $format_l '-<n>' 'offset to the current history number; (default: -100)'
+                printf $format_s '<[-]first> [<last>]' 'just searching within a give range'
+                printf '\n%s\n' 'EXAMPLES:'
+                printf ${format_l/(\\t)/} 'whatwhen grml' '# Range is set to -100 by default.'
+                printf $format_l 'whatwhen zsh -250'
+                printf $format_l 'whatwhen foo 1 99'
+            ;;
+            (\?)
+                printf '%s\n%s\n\n' ${usage} ${help} && return 1
+            ;;
+            (*)
+                # -l list results on stout rather than invoking $EDITOR.
+                # -i Print dates as in YYYY-MM-DD.
+                # -m Search for a - quoted - pattern within the history.
+                fc -li -m "*${first_char}${remain}*" $first $last
+            ;;
+        esac
+    # }}}
+    }
+
+
+
+    # retrieve weather information on the console
+    # Usage example: 'weather LOWG'
+    weather() {
+        emulate -L zsh
+        [[ -n "$1" ]] || {
+            print 'Usage: weather <station_id>' >&2
+            print 'List of stations: http://en.wikipedia.org/wiki/List_of_airports_by_ICAO_code'>&2
+            return 1
+        }
+
+        local VERBOSE="yes"    # TODO: Make this a command line switch
+
+        local ODIR=`pwd`
+        local PLACE="${1:u}"
+        local DIR="${HOME}/.weather"
+        local LOG="${DIR}/log"
+
+        [[ -d ${DIR} ]] || {
+            print -n "Creating ${DIR}: "
+            mkdir ${DIR}
+            print 'done'
+        }
+
+        print "Retrieving information for ${PLACE}:"
+        print
+        cd ${DIR} && wget -T 10 --no-verbose --output-file=$LOG --timestamping http://weather.noaa.gov/pub/data/observations/metar/decoded/$PLACE.TXT
+
+        if [[ $? -eq 0 ]] ; then
+            if [[ -n "$VERBOSE" ]] ; then
+                cat ${PLACE}.TXT
+            else
+                DATE=$(grep 'UTC' ${PLACE}.TXT | sed 's#.* /##')
+                TEMPERATURE=$(awk '/Temperature/ { print $4" degree Celcius / " $2" degree Fahrenheit" }' ${PLACE}.TXT | tr -d '(')
+                echo "date: $DATE"
+                echo "temp:  $TEMPERATURE"
+            fi
+        else
+            print "There was an error retrieving the weather information for $PLACE" >&2
+            cat $LOG
+            cd $ODIR
+            return 1
+        fi
+        cd $ODIR
+    }
+
+
+    # zsh profiling
+    profile() {
+        ZSH_PROFILE_RC=1 $SHELL "$@"
+    }
+
+    #f1# Edit an alias via zle
+    edalias() {
+        [[ -z "$1" ]] && { echo "Usage: edalias <alias_to_edit>" ; return 1 } || vared aliases'[$1]' ;
+    }
+    compdef _aliases edalias
+
+    #f1# Edit a function via zle
+    edfunc() {
+        [[ -z "$1" ]] && { echo "Usage: edfunc <function_to_edit>" ; return 1 } || zed -f "$1" ;
+    }
+    compdef _functions edfunc
+
+    # grep for running process, like: 'any vim'
+    any() {
+        emulate -L zsh
+        unsetopt KSH_ARRAYS
+        if [[ -z "$1" ]] ; then
+            echo "any - grep for process(es) by keyword" >&2
+            echo "Usage: any <keyword>" >&2 ; return 1
+        else
+            ps xauwww | grep -i --color=auto "[${1[1]}]${1[2,-1]}"
+        fi
+    }
+
+    #f1# Provides useful information on globbing
+    H-Glob() {
+        echo -e "
+     /      directories
+     .      plain files
+     @      symbolic links
+     =      sockets
+     p      named pipes (FIFOs)
+     *      executable plain files (0100)
+     %      device files (character or block special)
+     %b     block special files
+     %c     character special files
+     r      owner-readable files (0400)
+     w      owner-writable files (0200)
+     x      owner-executable files (0100)
+     A      group-readable files (0040)
+     I      group-writable files (0020)
+     E      group-executable files (0010)
+     R      world-readable files (0004)
+     W      world-writable files (0002)
+     X      world-executable files (0001)
+     s      setuid files (04000)
+     S      setgid files (02000)
+     t      files with the sticky bit (01000)
+ 
+   print *(m-1)          # Files modified up to a day ago
+   print *(a1)           # Files accessed a day ago
+   print *(@)            # Just symlinks
+   print *(Lk+50)        # Files bigger than 50 kilobytes
+   print *(Lk-50)        # Files smaller than 50 kilobytes
+   print **/*.c          # All *.c files recursively starting in \$PWD
+   print **/*.c~file.c   # Same as above, but excluding 'file.c'
+   print (foo|bar).*     # Files starting with 'foo' or 'bar'
+   print *~*.*           # All Files that do not contain a dot
+   chmod 644 *(.^x)      # make all plain non-executable files publically readable
+   print -l *(.c|.h)     # Lists *.c and *.h
+   print **/*(g:users:)  # Recursively match all files that are owned by group 'users'
+   echo /proc/*/cwd(:h:t:s/self//) # Analogous to >ps ax | awk '{print $1}'<"
+    }
+    alias help-zshglob=H-Glob
+ 
+
+fi
+
+
+# Local Variables: 
+# comment-start: "#" 
+# tab-width: 2 
+# mode: sh
+# End: 

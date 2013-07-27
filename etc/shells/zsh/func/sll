@@ -1,0 +1,9 @@
+# List symlinks in detail (more detailed version of 'readlink -f' and 'whence -s')
+    [[ -z "$1" ]] && printf 'Usage: %s <file(s)>\n' "$0" && return 1
+    for i in "$@" ; do
+        file=$i
+        while [[ -h "$file" ]] ; do
+            ls -l $file
+            file=$(readlink "$file")
+        done
+    done

@@ -1,0 +1,797 @@
+#! /bin/zsh -f
+#                               -*- Mode: Sh -*- 
+# prompt_manoj_setup --- 
+# Author           : Manoj Srivastava ( srivasta@glaurung.internal.golden-gryphon.com ) 
+# Created On       : Thu Jul 28 12:53:34 2005
+# Created On Node  : glaurung.internal.golden-gryphon.com
+# Last Modified By : Manoj Srivastava
+# Last Modified On : Fri Sep 12 21:40:19 2008
+# Last Machine Used: anzu.internal.golden-gryphon.com
+# Update Count     : 213
+# Status           : Unknown, Use with caution!
+# HISTORY          : 
+# Description      : 
+# 
+# Copyright © 2008 Manoj Srivastava <srivasta@debian.org
+# 
+# This file is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# GNU Emacs is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# On Debian GNU/Linux systems, the complete text of the GNU General
+# Public License can be found in `/usr/share/common-licenses/GPL'
+#
+#    A copy of the GNU General Public License is also available at
+#    <URL:http://www.gnu.org/copyleft/gpl.html>.  You may also obtain
+#    it by writing to the Free Software Foundation, Inc., 51 Franklin
+#    St, Fifth Floor, Boston, MA 02110-1301 USA
+# 
+
+prompt_manoj_help () {
+  cat <<'EOF'
+This prompt is not really color themable, I just use this in case I
+ever decide to go the angry fruit salad route. This is also unlikely
+to be a prompt that is very interesting; interesting prompts are, to
+me, a distraction.
+
+What I need from a prompt is simplicity; and the information that is
+useful is user name, host, and path of the current directory, in a
+title in the xterm, or s shortish string in a console.
+
+Colors are present for the case of a laptop, then, if the battery is
+discharging, then the prompt color should change with the state of the
+battery.
+
+EOF
+}
+
+## don't ask me 'do you wish to see all XX possibilities' before menu selection
+LISTPROMPT=''
+
+## SPROMPT - the spelling prompt
+SPROMPT='zsh: correct '%R' to '%r' ? ([Y]es/[N]o/[E]dit/[A]bort) '
+
+
+typeset -Ag ansi_colors other_colors term_color_fg term_color_bg 
+
+# The problem with colors in terminal emulators is that there are two
+# distinct mechanisms for color: the first one is the Tektronics or
+# ANSI termminals, which use the command sequece defined in the
+# terminfo capability setaf/setab pairs, and have one mappping from
+# colors to color indexes, like so:
+ansi_colors=(
+    black     0                yellow    3                cyan      6
+    red       1                blue      4                white     7
+    green     2                magenta   5
+)
+# However, there may exist other terminals which are not ANSI
+# terminals (SYVR4?), and these use the capability sets setf/setb, and
+# a different color index mapping -- like so.
+other_colors=(
+    black     0                cyan      3                yellow    6
+    blue      1                red       4                white     7
+    green     2                magenta   5 
+)
+
+# I use the following Xresources, which go better with my dark xterms
+## *VT100*color0:  black                                         
+## *VT100*color1:  rgb:FF/33/33    !red                          
+## *VT100*color2:  rgb:66/FF/33    !green                        
+## *VT100*color3:  rgb:FF/EB/33    !yellow                       
+## *VT100*color4:  rgb:33/A3/FF    !blue                         
+## *VT100*color5:  rgb:70/33/FF    !magenta                      
+## *VT100*color6:  rgb:33/FF/AD    !cyan                         
+## *VT100*color7:  cornsilk        !white rgb:FF/33/E0  violet   
+## *VT100*color8:  DarkSlateGrey                                 
+## *VT100*color9:  rgb:FF/99/99    !light red                    
+## *VT100*color10: rgb:B3/FF/99    !light green                  
+## *VT100*color11: rgb:FF/F5/99    !light yellow                 
+## *VT100*color12: rgb:99/D1/FF    !light blue                   
+## *VT100*color13: rgb:B8/99/FF    !light magenta                
+## *VT100*color14: rgb:99/FF/D6    !light cyan                   
+## *VT100*color15: rgb:FF/99/F0    !light violet                 
+
+# Since there are distinct command to set up a foreground color versus
+# a back ground color, and the command pairs depend on whether or not
+# the terminal is an ANSI terminal or not, it is convenient to set up
+# the fore ground and back gorund color arrays ahead of time. The
+# following set of associative arrays is what the ZSH built in color
+# associative array should have been, if it wants to be somewhat
+# portable
+
+# Set up fore ground and background, using the appropriate functions,
+# based on the type of terminal we have.
+if   [[ -n "$terminfo[setaf]" ]]; then
+    for k in ${(k)ansi_colors}; do
+        term_color_fg[$k]=$(echoti setaf $ansi_colors[$k])
+        term_color_bg[$k]=$(echoti setab $ansi_colors[$k])
+    done
+elif [[ -n "$terminfo[setf]"  ]]; then
+    for k in ${(k)ansi_colors}; do
+        term_color_fg[$k]=$(echoti setf $other_colors[$k])
+        term_color_bg[$k]=$(echoti setb $other_colors[$k])
+    done
+else
+    for k in ${(k)ansi_colors}; do
+        term_color_fg[$k]=
+        term_color_bg[$k]=
+    done
+fi
+
+# Set the color of the prompt based on battery levels. Again, we try
+# to cater to both the older APM based power schemas, and the new ACPI
+# stuff. First let us do APM:
+APM="/usr/bin/apm"
+
+# Determine battery level as a percentage
+prompt_manoj_apm_percent () {
+    state_line=$($APM)
+    cut_leading=${state_line#*: }
+    APM_PERCENT=${cut_leading%%%*}
+    echo $APM_PERCENT
+}
+
+# Are we charging, or discharging?
+prompt_manoj_apm_charge () {
+    case "$($APM)" in
+        *on-line*)
+            APM_CHARGE="+" ;;
+        *off-line*)
+            APM_CHARGE="-" ;;
+    esac
+    echo $APM_CHARGE
+}
+
+# Mostly for debugging
+prompt_manoj_echo_apm () {
+    echo -n "($(prompt_manoj_apm_charge)$(prompt_manoj_apm_percent)) "
+}
+
+# Set the prompt based on the percentage of battery liefe
+# remaining. What part of the prompt is colored is determmined later,
+# and depends on the terminal type.
+prompt_manoj_apm_color () {
+    if  [  "$(prompt_manoj_apm_charge)"  =  "+"  ];  then
+        echo  "B%$term_color_fg[cyan]"
+    else
+        case  $(prompt_manoj_apm_percent)  in
+            10?) echo  "$term_color_fg[white]%B"  ;;
+            9?)  echo  "$term_color_fg[green]"  ;;
+            8?)  echo  "$term_color_fg[green]"  ;;
+            7?)  echo  "$term_color_fg[green]"  ;;
+            6?)  echo  "$term_color_fg[blue]"  ;;
+            5?)  echo  "$term_color_fg[blue]"  ;;
+            4?)  echo  "$term_color_fg[blue]"  ;;
+            3?)  echo  "$term_color_fg[yellow]%B"  ;;
+            2?)  echo  "$term_color_fg[yellow]%B"  ;;
+            1?)  echo  "$term_color_fg[red]"  ;;
+            ?)   echo  "$term_color_fg[red]%B${terminfo[blink]}"  ;;
+            *)   echo  "$term_color_fg[magenta]"  ;;
+        esac
+    fi
+}
+
+#  Now let us do the same thing for ACPI. Calculation of the
+#  percentage of battery power remaining is more complex, since ACPI
+#  reports in finer granularity; We need to look for the power levels
+#  for each battery, of which there can be more than one. Also, just
+#  because a battery interface (the BAT? directories) exists does not
+#  mean there is a battery currently in the slot. Also, when the
+#  machine is on AC power, the remaining capacity is meanigless; it is
+#  set to the full design capability, long after the battery is unable
+#  to charge to those levels.
+
+# So, we accumulate the current remaingin power, and the last full
+# charge, since that is more meaningful than the designed capacity,
+# which my batteries have failed to reach for years now. I have
+# commented out the designed capacity bit, since it is mostly useless,
+# and just slows things down.
+prompt_manoj_acpi_percentage () {
+    local designed last_full current d l c percent
+    #designed=0
+    last_full=0
+    current=0
+    for battery in /sys/class/power_supply/BAT?; do
+        #d=$(egrep '^design capacity:' $battery/info 2>/dev/null | \
+        #    sed -e 's/^design capacity: *//' -e 's/ *mWh.*$//')
+        #l=$(egrep '^last full capacity:' $battery/info 2>/dev/null | \
+        #    sed -e 's/^last full capacity: *//' -e 's/ *mAh.*$//')
+        #c=$(egrep '^remaining capacity:' $battery/state 2>/dev/null | \
+        #    sed -e 's/^remaining capacity: *//' -e 's/ *mAh.*$//')
+        #(( designed  = designed  + d ))
+        #d=$(cat $battery/charge_full_design)
+        l=$(cat $battery/charge_full)
+        c=$(cat $battery/charge_now)
+        (( last_full = last_full + l ))
+        (( current   = current   + c ))
+    done
+    percent=100
+    if [[ -n "$last_full" && $last_full -gt 0 ]]; then
+        if [[ $current -lt $last_full ]]; then
+            ((percent = 100 * current / last_full ))
+        fi
+    fi
+    echo $percent
+}
+# The top level function. Here, if we do not have a battery interface,
+# we just return the bland old white prompt. We do the same if the
+# laptop is fully charged. If the laptop is currently charging, we
+# just return cyan; and do not bother with the slowish percentage
+# calculation. When the batteries are discharging, we slowly change
+# the prompt color from white to red; blinking the prompt just before
+# the battery dies.
+prompt_manoj_acpi_color () {
+    if [[ ! -e /sys/class/power_supply/BAT0 ]]; then
+        echo  "%B$term_color_fg[green]"
+        return
+    fi
+    local state
+    result=
+    for battery in /sys/class/power_supply/BAT?; do
+        state=$(cat $battery/status)
+        case state in
+            Full)
+                result=${result:=charged}
+                ;;
+            Discharging)
+                result=discharging
+                ;;
+            Charging)
+                result=charging
+                ;;
+            *)
+                # do nothing
+        esac
+    done
+    if [[ "$result" == "charged" ]]; then
+        echo -n  "%B$term_color_fg[white]"
+        return
+    elif [[ "$result" == "charging" ]]; then
+        echo -n  "B%$term_color_fg[cyan]"
+        return
+    fi
+    case  $(prompt_manoj_acpi_percentage)  in
+        10?) echo -n  "%B$term_color_fg[white]"  ;;
+        9?)  echo -n  "$term_color_fg[green]"  ;;
+        8?)  echo -n  "$term_color_fg[green]"  ;;
+        7?)  echo -n  "$term_color_fg[green]"  ;;
+        6?)  echo -n  "$term_color_fg[blue]"  ;;
+        5?)  echo -n  "$term_color_fg[blue]"  ;;
+        4?)  echo -n  "$term_color_fg[blue]"  ;;
+        3?)  echo -n  "%B$term_color_fg[yellow]"  ;;
+        2?)  echo -n  "%B$term_color_fg[yellow]"  ;;
+        1?)  echo -n  "$term_color_fg[red]"  ;;
+        ?)   echo -n  "%B${terminfo[blink]}$term_color_fg[red]"  ;;
+        *)   echo -n  "$term_color_fg[magenta]"  ;;
+    esac
+}
+
+# When we change the directory, we set the title of the xterm if we
+# are on an xterm, or else we massage the workdir variable. Note that
+# we need to runcate less in an xterm title than we do on a console
+# prompt (since the latter uses up line real estate))
+prompt_manoj_chpwd () {
+    setopt noxtrace localoptions
+    if [ "$TERM" = "xterm" ] || [ "$TERM" = "xterm-debian" ] || 
+        [ "$TERM" = "Eterm" ] || [ "$TERM" = "xterm-256color" ]; then
+        workdir=$(print -P '%30<<%~')
+        if [[ $#workdir -gt 25 ]]; then
+            workdir=${workdir/[^\/]#/...}
+        fi
+            #perl -e 'printf "%c]2;%s%c", 27, "'$psvar[1]$workdir'", 7 ; '
+        case $TERM in
+            sun-cmd)
+                #SETTERMTITLE=$(print -n "\e]l$psvar[1]$workdir\e\\")
+                print -n "\e]l$psvar[4]$workdir\e\\"
+                ;;
+            screen)
+                print -n "\ek"$psvar[4]$workdir"\e"\\\ ;
+                ;;
+
+            *xterm*|rxvt|(dt|k|E|x)term)
+                print -n "\e]2;$psvar[4]$workdir\a"
+                ;;
+            *)
+                :
+        esac 
+    else
+        workdir=$(print -P '%20<<%~')
+        if [[ $#workdir -gt 18 ]]; then
+            workdir=${workdir/[^\/]#/...}
+        fi
+    fi
+    if command -v less >/dev/null 2>&1; then
+        ls -asCF --color=always | less -ELQ; # I have a LESS setup elsewhere
+    else
+        ls -asCF | more -ds;
+    fi
+}
+
+# Given a base directory as the first argument, use PWD o detemine
+# subdirectory of the repo root we are in.
+__sub_dir() {
+    local sub_dir
+    sub_dir=$(readlink -f "${PWD}")
+    sub_dir=${sub_dir#$1}
+    echo ${sub_dir#/}
+}
+# In the following, set up the base_dir for the repository, the
+# sub_dir within that repository, the branch we are in, and if we are
+# in the middle of complex VCS operations.  Each functions sets these
+# variables for one kind of repository.
+
+# This is for arch
+__arch_dir() {
+    base_dir=$(tla tree-root 2>/dev/null) || return 1
+    base_dir=$(readlink -f "$base_dir")
+    sub_dir=$(__sub_dir "${base_dir}")
+    branch=$(tla tree-id)
+    branch=${branch##[^/]*/}
+    vcs="arch"
+}
+
+# bzr
+__bzr_dir() {
+    local branch_nick revno
+    base_dir=$(bzr info 2>/dev/null) || return 1
+    base_dir=$(echo "$base_dir" | sed -rne 's, *branch root: ,,p')
+    if [[ "$base_dir" == "." ]]; then
+        base_dir=$PWD
+    else
+        base_dir=$(readlink -f "$base_dir")
+    fi
+    sub_dir=$(__sub_dir "${base_dir}")
+    bzr version-info | while read i j; do
+        case "$i" in
+            revno:) revno="$j";;
+            branch-nick:) branch_nick="$j";;
+        esac
+    done
+    branch="bzr:${branch}@$revno"
+    vcs=bzr
+}
+
+# git. 
+__git_dir() {
+    base_dir=$(git rev-parse --show-cdup 2>/dev/null) || return 1
+    if [[ -n "$base_dir" ]]; then
+        base_dir=$(readlink -f "$base_dir")
+    else
+        base_dir=$PWD
+    fi
+    sub_dir=$(git rev-parse --show-prefix)
+    sub_dir=${sub_dir%/}
+    branch=$(git symbolic-ref -q HEAD || git name-rev --name-only HEAD 2>/dev/null)
+
+    if test -d "$base_dir/../.dotest"; then
+        if test -f "$base_dir/../.dotest/rebasing"; then
+            vcs_op="rebase"
+        elif test -f "$base_dir/../.dotest/applying"; then
+            vcs_op="am"
+        else
+            vcs_op="am/rebase"
+        fi
+    elif test -f "$base_dir/.dotest-merge/interactive"; then
+        vcs_op="rebase -i"
+        branch="$(cat "$base_dir/.dotest-merge/head-name")"
+    elif test -d "$base_dir/.dotest-merge"; then
+        vcs_op="rebase -m"
+        branch="$(cat "$base_dir/.dotest-merge/head-name")"
+    elif test -f "$base_dir/MERGE_HEAD"; then
+        vcs_op="merge"
+    else
+        if test -f "$base_dir/BISECT_LOG"; then
+            vcs_op="bisect"
+            branch="$(git symbolic-ref HEAD 2>/dev/null)" || \
+                branch="$(git describe --exact-match HEAD 2>/dev/null)" || \
+                branch="$(cut -c1-7 "$base_dir/HEAD")..."
+
+        fi
+    fi
+    branch=${branch#refs/heads/}
+    dirty=''
+    # if (! ((git diff --cached --quiet) && (git diff --quiet))); then
+    if ! git diff --cached --quiet; then
+        dirty='S'
+    fi
+    if ! git diff --quiet; then
+        dirty="${dirty}D"
+    fi
+    tracked=''
+    if [[ $(git rev-parse --is-inside-work-tree 2> /dev/null) == 'true' ]] && 
+        git status --porcelain | grep '??' &> /dev/null ; then
+            #[[ -n $(git ls-files --others --exclude-standard) ]] ; then
+        tracked="U"
+    fi
+    remote=''
+    ahead=0
+    behind=0
+    tracking=''
+    upstream=''
+    relative=''
+    remote=$(git config branch.${branch}.remote || true)
+    if [[ -n "$remote" ]]; then
+        tracking=${$(git config branch.${branch}.merge)/refs\/heads\/}
+        upstream=${$(git rev-parse --verify $remote/$tracking --symbolic-full-name)/refs\/remotes\/}
+        ahead=$(git  rev-list ${upstream}..HEAD | wc -l)
+        behind=$(git rev-list HEAD..${upstream} | wc -l)
+        if [[ -n "$ahead" ]] && [[ $ahead -gt 0 ]]; then
+            relative="+${ahead}"
+        elif [[ -n "$behind" ]] && [[ $behind -gt 0 ]]; then
+            relative="-${behind}"
+        fi
+    fi
+    # echo >&2 "dirty=$dirty"
+    # echo >&2 "tracked=$tracked"
+    # echo >&2 "remote=$remote"
+    # echo >&2 "ahead=$ahead"
+    # echo >&2 "tracking=$tracking"
+    # echo >&2 "upstream=$upstream"
+    # echo >&2 "relative=$relative"
+    vcs="git"
+}
+
+# svn
+__svn_dir() {
+    [[ -d ".svn" ]] || return 1
+    base_dir="."
+    while [[ -d "$base_dir/../.svn" ]]; do base_dir="$base_dir/.."; done
+    base_dir=$(readlink -f "$base_dir")
+    sub_dir=$(__sub_dir "${base_dir}")
+    branch=$(svn info "$base_dir" | awk '/^URL/ { sub(".*/","",$0); r=$0 } /^Revision/ { sub("[^0-9]*","",$0); print r":"$0 }')
+    vcs="svn"
+}
+
+# svk
+__svk_dir() {
+    [[ -f ~/.svk/config ]] || return 1
+    base_dir=$(awk '/: *$/ { sub(/^ */,"",$0); sub(/: *$/,"",$0); if (match("'${PWD}'", $0"(/|$)")) { print $0; d=1; } } /depotpath/ && d == 1 { sub(".*/","",$0); r=$0 } /revision/ && d == 1 { print r ":" $2; exit 1 }' ~/.svk/config) && return 1
+    branch=${base_dir##*
+    }
+    base_dir=${base_dir%%
+        *}
+    sub_dir=$(__sub_dir "${base_dir}")
+    vcs="svk"
+}
+
+# mercurial
+__hg_dir() {
+    
+    base_dir=$(hg root 2>/dev/null) || return 1
+    base_dir=$(readlink -f "$base_dir")
+    sub_dir=$(__sub_dir "${base_dir}")
+    #branch=$(< "${base_dir}/.hg/branch")
+    branch="hg:$(hg branch)"
+    vcs="hg"
+}
+# return formatted path components (prefix branch postfix) given the
+# repository root and the branch.
+__vcs_get_prompt_path_components()
+{
+  # shortcut: if there are no arguments, return a default prompt
+  if [ -z "${1:-}" ]; then
+    pwdnamed="%${_PROMPT_PATH_MAXLEN}<..<%~%<<"
+    pwdnamed="${(%)pwdnamed}"
+    echo "$pwdnamed"
+    return
+  fi
+
+  local reporoot branch workdir
+  workdir=''
+  reporoot="${1%%/}"
+  branch="$2"
+
+  # replace named directories in the PWD, we need thi for the proper component
+  # count later
+  local pwdnamed="%~"
+  pwdnamed="${(%)pwdnamed}"
+
+  # store paths in arrays for component count calculation
+  typeset -la apwd apwdnamed areporoot
+  apwd=(${(s:/:)PWD})
+  apwdnamed=(${(s:/:)pwdnamed})
+  areporoot=(${(s:/:)reporoot})
+
+  # get the number of leading and trailing path components. Since we're using
+  # %~ later and then /home/madduck suddenly becomes ~, which is 1, not
+  # 2 components, we calculate the leading component count by using the named
+  # path and the number of post components
+  local precomps postcomps
+  postcomps=$(($#apwd - $#areporoot))
+  precomps=$(($#apwdnamed - $postcomps))
+
+  local postfix
+  if (( $postcomps > 0 )); then
+    postfix="%${postcomps}~"
+    postfix="${(%)postfix}"
+  fi
+  
+  # we don't want the prompt to get too long, so keep the total prompt length
+  # under $_PROMPT_PATH_MAXLEN (25), but ensure that the prefix is not shorter
+  # than $_PROMPT_PATH_MINLEN (10), no matter what
+  local prelen minlen prefix
+  prelen=$((${_PROMPT_PATH_MAXLEN:-25} - $#branch - $#postfix))
+  minlen=${_PROMPT_PATH_MINLEN:-10}
+  (( $prelen < $minlen )) && prelen=$minlen
+  prefix="%${prelen}<..<%-${precomps}~%<<"
+  prefix="${(%)prefix}"
+
+  echo "$prefix" "$branch" "$postfix"
+}
+
+# set psvar[1..3] depending on repo type, or just psvar[1] if no repo found
+__vcs_set_prompt_variables()
+{
+    workdir=''
+    vcs=''
+    dirty=''
+    psvar=("${(%)p}")
+
+    __git_dir || __arch_dir || __svn_dir || __bzr_dir #|| __svk_dir || __hg_dir 
+    if [[ -z "$vcs" ]]; then
+        local p="%${MAXLEN}<..<%~%<<"
+        psvar=("${(%)p}")
+        return
+    fi
+    set -- $(__vcs_get_prompt_path_components "$base_dir" "$branch")
+
+    # reporoot, or named variable directory
+    psvar[1]="$1"
+    if [[ -n "$vcs_op" ]]; then
+        psvar[2]="[$2::$vcs_op]"
+    else
+        psvar[2]="[$2]"
+    fi
+    psvar[3]="$3"
+    psvar[4]=$(print -P "%n\\\@%m:")
+    if [[ -n "$dirty" ]]; then
+        psvar[5]="$dirty"
+    fi
+    if [[ -n "$tracked" ]]; then
+        psvar[6]="$tracked"
+    fi
+    if [[ -n "$relative" ]]; then
+        psvar[7]="$relative"
+    fi
+    # echo >&2 "5=$psvar[5]"
+    # echo >&2 "6=$psvar[6]"
+    # echo >&2 "7=$psvar[7]"
+}
+
+# Set up the per-command and chpwd functions
+if [ $(id -u) != 0 ]; then
+  # too dangerous to be run as root
+
+  _update_vcs_prompt_vars_if_vcs_ran() {
+    case "$(history $(($HISTCMD - 1)))" in
+      # $vcs appeared in last command, so be sure to update
+      *${vcs}*) __vcs_set_prompt_variables "$vcs"
+    esac
+  }
+  precmd_functions+=(_update_vcs_prompt_vars_if_vcs_ran)
+
+  _update_vcs_prompt_vars() {
+    __vcs_set_prompt_variables
+  }
+  chpwd_functions+=(_update_vcs_prompt_vars)
+
+  # call it once
+  _update_vcs_prompt_vars
+fi
+
+prompt_manoj_precmd () {
+    setopt noxtrace localoptions
+
+}
+
+
+# directory based profiles {{{
+
+if is433 ; then
+
+CHPWD_PROFILE='default'
+function chpwd_profiles() {
+    # Say you want certain settings to be active in certain directories.
+    # This is what you want.
+    #
+    # zstyle ':chpwd:profiles:/usr/src/grml(|/|/*)'   profile grml
+    # zstyle ':chpwd:profiles:/usr/src/debian(|/|/*)' profile debian
+    #
+    # When that's done and you enter a directory that matches the pattern
+    # in the third part of the context, a function called chpwd_profile_grml,
+    # for example, is called (if it exists).
+    #
+    # If no pattern matches (read: no profile is detected) the profile is
+    # set to 'default', which means chpwd_profile_default is attempted to
+    # be called.
+    #
+    # A word about the context (the ':chpwd:profiles:*' stuff in the zstyle
+    # command) which is used: The third part in the context is matched against
+    # ${PWD}. That's why using a pattern such as /foo/bar(|/|/*) makes sense.
+    # Because that way the profile is detected for all these values of ${PWD}:
+    #   /foo/bar
+    #   /foo/bar/
+    #   /foo/bar/baz
+    # So, if you want to make double damn sure a profile works in /foo/bar
+    # and everywhere deeper in that tree, just use (|/|/*) and be happy.
+    #
+    # The name of the detected profile will be available in a variable called
+    # 'profile' in your functions. You don't need to do anything, it'll just
+    # be there.
+    #
+    # Then there is the parameter $CHPWD_PROFILE is set to the profile, that
+    # was is currently active. That way you can avoid running code for a
+    # profile that is already active, by running code such as the following
+    # at the start of your function:
+    #
+    # function chpwd_profile_grml() {
+    #     [[ ${profile} == ${CHPWD_PROFILE} ]] && return 1
+    #   ...
+    # }
+    #
+    # The initial value for $CHPWD_PROFILE is 'default'.
+    #
+    # Version requirement:
+    #   This feature requires zsh 4.3.3 or newer.
+    #   If you use this feature and need to know whether it is active in your
+    #   current shell, there are several ways to do that. Here are two simple
+    #   ways:
+    #
+    #   a) If knowing if the profiles feature is active when zsh starts is
+    #      good enough for you, you can put the following snippet into your
+    #      .zshrc.local:
+    #
+    #   (( ${+functions[chpwd_profiles]} )) && print "directory profiles active"
+    #
+    #   b) If that is not good enough, and you would prefer to be notified
+    #      whenever a profile changes, you can solve that by making sure you
+    #      start *every* profile function you create like this:
+    #
+    #   function chpwd_profile_myprofilename() {
+    #       [[ ${profile} == ${CHPWD_PROFILE} ]] && return 1
+    #       print "chpwd(): Switching to profile: $profile"
+    #     ...
+    #   }
+    #
+    #      That makes sure you only get notified if a profile is *changed*,
+    #      not everytime you change directory, which would probably piss
+    #      you off fairly quickly. :-)
+    #
+    # There you go. Now have fun with that.
+    local -x profile
+
+    zstyle -s ":chpwd:profiles:${PWD}" profile profile || profile='default'
+    if (( ${+functions[chpwd_profile_$profile]} )) ; then
+        chpwd_profile_${profile}
+    fi
+
+    CHPWD_PROFILE="${profile}"
+    return 0
+}
+chpwd_functions=( ${chpwd_functions} chpwd_profiles )
+
+fi # is433
+
+# }}}
+
+
+prompt_manoj_setup () {
+    PS2="%_> "
+    PS3="?# "
+    PS4="+%N:%i> "
+    RPS1='%~'
+    RPS2='<%^'
+
+    if   [[ -d /proc/apm ]];  then  battery_color () { prompt_manoj_apm_color        }      
+    elif [[ -d /proc/acpi ]]; then  battery_color () { prompt_manoj_acpi_color       } 
+    else                            battery_color () { echo  "$term_color_fg[green]" }
+    fi
+
+    ## set variable debian_chroot if running in a chroot with /etc/debian_chroot
+    #if [[ -z "$debian_chroot" ]] && [[ -r /etc/debian_chroot ]] ; then
+    #    debian_chroot=$(cat /etc/debian_chroot)
+    #fi
+
+    if [[ -n "$terminfo[rev]"  ]]; then rev_vid="$terminfo[rev]";
+    else                                rev_vid=;                  fi
+    if [[ -n "$terminfo[dim]"  ]]; then rev_vid="$terminfo[dim]";
+    else                                rev_vid=;                  fi
+    if [[ -n "$terminfo[sgr0]" ]]; then norm_vid="$terminfo[sgr0]";
+    else                                norm_vid=;                 fi
+
+    # "%(5v,                       if psvar[5] exists (5,6,7 -- at least one is true)
+    #        %{                    string escape
+    #            $term_color_fg[magenta]
+    #        %}
+    # ,)                           nothing if false
+
+    # %(2v.                        if branch and op
+    #      %B%2v%b                     bold branch name
+    # .)                           nothing if no branch/op
+
+    # %(!,#,_)                    if running as root, add #, else _
+
+    # %{5v,                        if dirty
+    #        %B%5v%b                   what kind of dirty (resets color here)
+    # .)                           nothing if no branch/op
+
+    # %(6v,                        if untracked
+    #    %6v                       add U
+    # ,)                           else nothing
+    
+
+    # %(7v,                        if not the same as tracking branch
+    #    %7v                       state if ahead or behind
+    # ,)                           else nothing
+    
+    # %{$dim_vid$(battery_color)%} set the battery color from this point on
+    # %(?,_,_%?)                    if last command was non error, enter _, else enter error code
+    # >
+    # %{$norm_vid%} "              normal video
+
+    case $TERM in
+        emacs|dumb)
+            PS1="%(!,#,_)_> "
+            ;;
+        *xterm*|rxvt|screen|sun-cmd|(dt|k|E)term)
+            PS1="%(5v,%{$term_color_fg[magenta]%},)%(2V.%B%2v%b.)%(!,#,_)%(5V,%B%5v%b,)%(6V,%6v,)%(7V,%7v,)%{$dim_vid$(battery_color)%}%(?,_,_%?)>%{$norm_vid%} "
+            RPS1="%{$dim_vid$(battery_color)%}%40<...<%~%{$reset_color%}"
+            ;;
+        *)
+            PS1="%(5v,%{$term_color_fg[magenta]%},)%(2V.%B%2v%b.)%(!,#,_)%(5V,%B%5v%b,)%(6V,%6v,)%(7V,%7v,)%u%{$dim_vid$(battery_color)%}%(?,_,_%?)>%{$norm_vid%} "
+            RPS1="%{$dim_vid$(battery_color)%}%40<...<%~%{$reset_color%}"
+    esac
+    #PS1="%{%S%}${workdir}%s%{$dim_vid%}$PROMPTCOMMENT%{$norm_vid%} %{$(battery_color)%}%(!,#,_)_>%{$norm_vid%} "
+
+    # space_left=$(( $COLUMNS - $#base_prompt_expanded_no_color - 2 ))
+
+    precmd  () { }
+    preexec () { 
+        local CMDS
+        local CMD
+        set -A CMDS $(echo $1)
+        #Use first word from command line, but treat sudo and ssh
+        #specially
+        if [[ $CMDS[1] == "sudo" ]]; then
+            CMD="sudo $CMDS[2]"
+        elif [[ $CMDS[1] == "ssh" ]]; then
+            #Try to find target host for ssh
+            CMD="ssh"
+            local SKIP=1 #skip first arg
+            for c in $CMDS; do
+                if [[ $SKIP == 1 ]]; then
+                    SKIP=0
+                elif [[ $c =~ "^-[1246AaCfgkMNnqsTtVvXxY]+" ]]; then
+                    #Option with no argument
+                elif [[ $c =~ "^-.*" ]]; then
+                    #skip next entry after option that expects an
+                    #argument
+                    SKIP=1
+                else
+                    # found host name, strip out user name
+                    CMD=`echo $c | sed 's/.*@\(.*\)/\1/'`
+                    break
+                fi
+            done;
+        else
+            CMD=$CMDS[1]
+        fi
+        setopt UNSET # Avoid errors from undefined STY for users with 'NOUNSET'
+        if [[ $TERM == "screen" || -n "$STY" ]]; then
+            echo -ne "\ek$CMD\e\\"
+        fi
+        if [[ $TERM == "xterm" ]]; then
+            echo -ne "\e]0;$CMD\a"
+        fi
+        setopt LOCAL_OPTIONS # restore value of UNSET
+    }
+    chpwd   () { prompt_manoj_chpwd }
+}
+
+prompt_manoj_setup "$@"

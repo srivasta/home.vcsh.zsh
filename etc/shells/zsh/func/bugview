@@ -1,0 +1,11 @@
+if [ $# = 1 ]; then
+  if expr "$1" : '[0-9][0-9]*$' > /dev/null; then
+    URL='http://bugs.debian.org/'$1
+  else
+    URL='http://bugs.debian.org/src:'$1
+  fi
+else
+  URL='http://bugs.debian.org/srivasta@debian.org'
+fi
+
+w3m "$URL"

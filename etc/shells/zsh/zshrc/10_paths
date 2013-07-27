@@ -1,0 +1,107 @@
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# Created On       : Mon Jul 25 15:18:23 2005
+#
+# Copyright © 2005-2010 Manoj Srivastava <srivasta@debian.org>
+
+if [[ -d $ZDOTDIR/func ]]; then
+    fpath=($ZDOTDIR/func $fpath)
+fi
+mailpath=(
+    ~/var/spool/mail/important ~/var/spool/mail/debian.spool 
+)
+
+########################################################################################
+## What directories should we be looking for?
+COMMON_SYS_DIRS=(/bin /usr/bin /sbin /usr/sbin /usr/local/sbin /usr/games)
+case "$MY_SYS_TYPE" in
+    hppa1.1-hp-hpux*)
+        SYS_DIRS=(/bin/posix /usr/contrib/bin /usr/contrib/games)
+        export MORE=-l
+        ;;
+    mips-dec-ultrix*)
+    # Don't make useless coredump files.  If you want a coredump,
+    # say "ulimit -c unlimited" and then cause a segmentation fault.
+        ulimit -c 0; # ulimit only has afnp on HP's
+        SYS_DIRS=( /usr/new /usr/ucb )
+        export MORE=-l
+        ;;
+    alpha-dec-osf*)
+        export MORE=-e;
+        SYS_DIRS=( /usr/ucb /usr/local/bin/AF )
+        ulimit -c 0; 
+        ;;
+    *)
+        ;;
+esac
+
+SYS_BIN=( ${^COMMON_SYS_DIRS}(-/NF^M) ${^SYS_DIRS}(-/NF^M) )
+
+# compiler cache
+CCACHE_BIN=(/usr/lib/ccache)
+# Default directories from my home 
+DEFAULT_DIRS=($default_dir/bin/$MY_SYS_TYPE $default_dir/sbin $default_dir/bin)
+MY_BIN=(  ${^CCACHE_BIN}(-/NF^M)  ${^DEFAULT_DIRS}(-/NF^M) )
+
+## Local directories
+LOCAL_DIRS=(/usr/local/bin /usr/local/scripts)
+LOCAL_BIN=( ${^LOCAL_DIRS}(-/NF^M) )
+
+## Where to find the X stuff
+X11_DIRS=( /usr/X11R6/bin /usr/X11R5/bin /usr/X386/bin /usr/local/bin/X11 /usr/bin/X11)
+X11_BIN=( ${^X11_DIRS}(-/NF^M) )
+
+## Where to find the TeX stuff
+TEX_DIRS=(/usr/local/share/teTeX/bin/$MY_SYS_TYPE )
+TEX_BIN=( ${^TEX_DIRS}(-/NF^M) )
+
+# EC2
+export EC2_HOME=/usr/local/ec2
+EC2_DIRS=( $EC2_HOME )
+EC2_BIN=( ${^EC2_DIRS}(-/NF^M) )
+
+# INFOPATH, which is the variable looked at by info, is not an array
+INFO_DIRS=( /usr/local/info /usr/local/share/emacs/site-lisp/gnus-cvs/texi 
+    /usr/share/info /usr/info /usr/share/texmf/source/info )
+INFOPATH=${(j.:.)$(echo ${^INFO_DIRS}(-/NF^M) )}
+
+
+
+path=( $MY_BIN $LOCAL_BIN $SYS_BIN $X11_BIN $TEX_BIN $EC2_BIN)
+
+NLSPATH="./%N:/usr/local/etc/%N"
+NLS_DIRS='/var/dcelocal/nls/msg /opt/dcelocal/nls/msg /usr/lib/nls/msg' 
+for dir in $NLS_DIRS; do
+        if test -d  $dir/. ; then
+                for j in $dir/*; do
+                        NLSPATH="$NLSPATH:$j/%N"
+                done
+        fi
+done
+export NLSPATH
+
+
+if [ "X$NLSPATH" = "X" ]; then
+    XNLSPATH="/usr/X11R6/lib/X11/nls"
+else
+    NLSPATH="$XNLSPATH:/usr/X11R6/lib/X11/nls"
+fi
+export XNLSPATH
+
+
+# Local Variables: 
+# comment-start: "#" 
+# tab-width: 2 
+# mode: sh
+# End: 

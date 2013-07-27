@@ -1,0 +1,12 @@
+#! /bin/zsh -f
+
+# mpiu ()
+# {
+  local reuse="$1" debfile="$2" getRoot='';
+  if [[ $(id -u) -ne 0 ]]; then
+      getRoot=/usr/bin/sudo
+  fi
+  echo $getRoot piuparts --skip-minimize --no-symlinks -m http://192.168.1.21:19999/deb-kernel $reuse  /scratch/sandbox/piuparts.tar.gz $debfile
+  $getRoot piuparts --skip-minimize --no-symlinks -m http://192.168.1.21:19999/deb-kernel $reuse  /scratch/sandbox/piuparts.tar.gz $debfile
+
+# }

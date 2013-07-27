@@ -1,0 +1,401 @@
+#! /bin/zsh -f
+#                               -*- Mode: Sh -*- 
+# completion --- 
+# Author           : Manoj Srivastava ( srivasta@glaurung.internal.golden-gryphon.com ) 
+# Created On       : Sun Jul 31 18:47:58 2005
+# Created On Node  : glaurung.internal.golden-gryphon.com
+# Last Modified By : Manoj Srivastava
+# Last Modified On : Fri Mar  9 13:22:08 2007
+# Last Machine Used: glaurung.internal.golden-gryphon.com
+# Update Count     : 69
+# Status           : Unknown, Use with caution!
+# HISTORY          : 
+# Description      : 
+# 
+# 
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+# Copyright © 2005-2010 Manoj Srivastava <srivasta@debian.org>
+
+# If running interactively, then:
+if [[ -n "$PS1" ]]; then
+    
+    zmodload -i zsh/complist
+
+    autoload -U zmv
+
+    zstyle ':completion:*' use-compctl false
+
+    zstyle ':completion:*' verbose true
+    zstyle :compinstall filename '/home/srivasta/var/state/completion'
+
+    # recent (as of Dec 2007) zsh versions are able to provide descriptions
+    # for commands (read: 1st word in the line) that it will list for the user
+    # to choose from. The following disables that, because it's not exactly fast.
+    zstyle ':completion:*:-command-:*:'    verbose false
+
+    # don't complete backup files as executables
+    zstyle ':completion:*:complete:-command-::commands' ignored-patterns '(aptitude-*|*\~)'
+
+    zstyle ':completion:*' auto-description 'specify: %d'
+    zstyle ':completion:*' completer _expand _complete _correct _approximate
+    zstyle ':completion:*' expand suffix
+    zstyle ':completion:*' format 'Completing %d'
+    zstyle ':completion:*' group-name ''
+    zstyle ':completion:*' ignore-parents parent pwd .. directory
+    zstyle ':completion:*' insert-unambiguous true
+
+    # activate color-completion
+    zstyle ':completion:*:default'         list-colors ${(s.:.)LS_COLORS}
+    #zstyle ':completion:*' list-colors ''
+    zstyle ':completion:*' list-suffixes true
+    zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}' 'r:|[._-]=** r:|=**' 'l:|=* r:|=*'
+
+    zstyle ':completion:*' max-errors 2 numeric
+
+    # Better completion for killall.
+    zstyle ':completion:*:killall:*' command 'ps -u $USER -o cmd'
+
+    zstyle ':completion:*' menu select=4
+    zstyle ':completion:*' original true
+    zstyle ':completion:*' preserve-prefix '//[^/]##/'
+    zstyle ':completion:*' prompt 'The list of corrections (%e erros found)'
+    zstyle ':completion:*' select-prompt %SScrolling active: current selection at %p%s
+    zstyle ':completion:*' special-dirs true
+    zstyle ':completion:*' squeeze-slashes true
+    zstyle ':completion:*' verbose true
+
+    autoload -U compinit
+    compinit
+
+    # completion:<func>:<completer>:<command>:<argument>:<tag>
+
+    # menu selection is an addition to menu completion, not a replacement.
+    ## how many completions switch on menu selection
+    ## use 'long' to start menu compl. if list is bigger than screen
+    ## or some number to start menu compl. if list has that number
+    ## of completions (or more).
+    #zstyle ':completion:*' menu select=<NUM>
+    zstyle ':completion:*' menu select=long
+    zstyle ':completion:*' select-prompt %SScrolling active: current selection at %p%s
+
+    # accepts a completion, and then tries to complete again using menu
+    # selection. This is very useful with directory hierarchies, and in
+    # combination with undo gives you a simple file browser.
+    bindkey -M menuselect '^o' accept-and-infer-next-history
+
+    # We are using the _expand, so rab should only complete word, since
+    # otherwise expansion would be done before completion started up.
+    bindkey '^i' complete-word
+
+    # all the possible completions are inserted onto the command
+    # line. However, it uses the results of ordinary contextual completion
+    # to achieve this. The normal way that the completion system achieves
+    # this is by influencing the behaviour of any subsequent completers
+    # which are called --- hence you will need to put _all_matches in the
+    # list of completers before any which you would like to have this
+    # behaviour.
+
+    # The first time you try completion, you only get a list; nothing
+    # changes, Oldlist keeps the lsits of completions around which would
+    # normally be lost (say, you try shell completions using Esc-/)
+
+    # Ordinary, no-frills completion
+
+    # Approximation with one error, as given by the second style.
+
+    # Ordinary completion with extended completion turned on, as given by
+    # the third style. Sorry, this will be a black box until I talk about
+    # the matcher style later on; for now, you'll just have to take my
+    # word for it that this style allows the characters in the square
+    # brackets to have a wildcard in front, so `a-b' can complete to
+    # `able-baker', and so on.
+
+    # Approximation with up to four errors, as given by the final style.
+
+    ##zstyle ':completion:*' completer _expand:-glob _expand:-subst _complete _prefix:-complete _match _ignored _correct _approximate:-one _all_matches _list _oldlist _complete:-extended _approximate  _prefix:-approximate _prefix
+
+    zstyle ':completion:*' completer _expand _complete  _match _correct _list  _approximate _prefix
+
+    # completion:<func>:<completer>:<command>:<argument>:<tag>
+
+    zstyle ':completion:*:match:*' original only
+    zstyle ':completion:*' auto-description 'Specify: %d'
+
+    # format on completion
+    zstyle ':completion:*:descriptions'    format $'%{\e[0;31m%}completing %B%d%b%{\e[0m%}'
+
+    # Ignore completion functions for commands you don't have:
+    zstyle ':completion::(^approximate*):*:functions' ignored-patterns '_*'
+
+
+    ## filename suffixes to ignore during completion (except after rm command)
+    zstyle ':completion:*:*:(^rm):*:*files' ignored-patterns '*?.(o|c~|old|pro|zwc)' '*~'
+
+    ## don't complete backup files as executables
+    zstyle ':completion:*:complete:-command-::commands' ignored-patterns '*\~'
+
+    # Prevent CVS files/directories from being completed
+    zstyle ':completion:*:(all-|)files' ignored-patterns '(|*/)CVS'
+    zstyle ':completion:*:cd:*' ignored-patterns '(*/)#CVS'
+
+    # Same for lost+found directories
+    zstyle ':completion:*:cd:*' ignored-patterns '(*/)#lost+found'
+
+    # With commands like `rm' it's annoying if one gets offered the same
+    # filename again even if it is already on the command line. To avoid
+    # that:
+    zstyle ':completion:*:rm:*' ignore-line yes
+
+
+    # only: complete the names of parameters we have special completions
+    # for in parameter assignments
+    zstyle ':completion::*:(-command-|export):*' fake-parameters ${${${_comps[(I)-value-*]#*,}%%,*}:#-*-}
+
+
+
+    # completion:<func>:<completer>:<command>:<argument>:<tag>
+
+
+    [ -f ~/.ssh/config ] && : ${(A)ssh_config_hosts:=${${${${(@M)${(f)"$(<~/.ssh/config)"}:#Host *}#Host }:#*\**}:#*\?*}}
+    [ -f ~/.ssh/known_hosts ] && : ${(A)ssh_known_hosts:=${${${(f)"$(<$HOME/.ssh/known_hosts)"}%%\ *}%%,*}}
+
+    zstyle ':completion:*:*:*' hosts $ssh_config_hosts $ssh_known_hosts
+    ## zstyle ':completion:*:(ssh|scp):*' users clint schizo
+
+
+
+    # When completing process IDs I normally want to fall into menu
+    # selection, too:, but I also want to make sure that I always get the
+    # list, even if I complete on a command name prefix instead of a PID
+    # and there is only one possible completion, which is inserted right
+    # away. This means that the completion system shows me the excerpt
+    # from the `ps(1)' output for verification that the inserted PID is
+    # indeed the one of the command I want to kill
+    zstyle ':completion:*:*:*:*:processes' menu yes select
+    zstyle ':completion:*:*:*:*:processes' force-list always
+
+    ## on processes completion complete all user processes
+    zstyle ':completion:*:processes' command 'ps -au$USER'
+
+    ## add colors to processes for kill completion
+    zstyle ':completion:*:*:kill:*:jobs' list-colors 'no=01;31'
+    zstyle ':completion:*:*:kill:*:processes' list-colors '=(#b) #([0-9]#)*=0=01;31'
+
+    # Provide more processes in completion of programs like killall:
+    zstyle ':completion:*:processes-names' command 'ps c -u ${USER} -o command | uniq'
+
+
+
+    # run rehash on completion so new installed program are found automatically:
+    _force_rehash() {
+        (( CURRENT == 1 )) && rehash
+        return 1
+    }
+
+
+    ## allow one error
+    # zstyle ':completion:*:approximate-one:*' max-errors 1
+    # allow one error for every three characters typed in approximate completer
+    zstyle ':completion:*:approximate:'    max-errors 'reply=( $((($#PREFIX+$#SUFFIX)/3 )) numeric )'
+    zstyle ':completion:*:complete-extended:*' matcher 'r:|[.,_-]=* r:|=*'
+    ## allow four errors
+    zstyle ':completion:*:approximate-four:*' max-errors 4
+    # if you want the number of errors allowed by _approximate to increase
+    # with the length of what you have typed so far:allow one error for
+    # every three characters typed in approximate completer
+    zstyle -e ':completion:*:approximate:*' max-errors \
+       'reply=( $(( ($#PREFIX+$#SUFFIX)/3 )) numeric )'
+
+
+    zstyle ':completion:*:expand-glob:*' glob yes
+    zstyle ':completion:*:expand-subst:*' substitute yes
+    ## insert all expansions for expand completer
+    zstyle ':completion:*:expand:*' tag-order all-expansions
+    #zstyle ':completion:*:expand:*' tag-order expansions
+    zstyle ':completion:*:history-words'   list false
+
+    # activate menu
+    zstyle ':completion:*:history-words'   menu yes
+
+    # ignore duplicate entries
+    zstyle ':completion:*:history-words'   remove-all-dups yes
+    zstyle ':completion:*:history-words'   stop yes
+
+    zstyle ':completion:*:cd:*' tag-order local-directories path-directories
+    zstyle ':completion:*:-command-:*' tag-order '!parameters'
+
+    zstyle ':completion::prefix:::' completer _complete
+    zstyle ':completion:*:prefix-complete:*' completer _complete
+    zstyle ':completion:*:prefix-approximate:*' completer _approximate
+
+    zle -C all-matches complete-word _generic
+    bindkey '^Xa' all-matches
+    zstyle ':completion:all-matches:*' completer _all_matches
+    zstyle ':completion:all-matches:*' old-matches only
+
+    # formatting and messages
+    zstyle ':completion:*' verbose yes
+    zstyle ':completion:*:descriptions' format $'%{\e[0;31m%}%d%{\e[0m%}'
+    zstyle ':completion:*:messages' format $'%{\e[0;31m%}%d%{\e[0m%}'
+    zstyle ':completion:*:warnings' format $'%{\e[0;31m%}No matches for: %d%{\e[0m%}'
+
+    zstyle ':completion:*:options'         auto-description '%d'
+
+    # describe options in full
+    zstyle ':completion:*:options'         description 'yes'
+
+
+
+    # define files to ignore for zcompile
+    zstyle ':completion:*:*:zcompile:*'    ignored-patterns '(*~|*.zwc)'
+    zstyle ':completion:correct:'          prompt 'correct to: %e'
+
+
+    # complete manual by their section
+    zstyle ':completion:*:manuals'    separate-sections true
+    zstyle ':completion:*:manuals.*'  insert-sections   true
+    zstyle ':completion:*:man:*'      menu yes select
+
+    # provide .. as a completion
+    zstyle ':completion:*' special-dirs ..
+
+
+    # start menu completion only if it could find no unambiguous initial string
+    zstyle ':completion:*:correct:*'       insert-unambiguous true
+    zstyle ':completion:*:corrections'     format $'%{\e[0;31m%}%d (errors: %e)%{\e[0m%}'
+    zstyle ':completion:*:correct:*'       original true
+
+    # Group completions according to tags.
+    zstyle ':completion:*:matches' group 'yes'
+    zstyle ':completion:*' group-name ''
+    zstyle ':completion:*' group-order ''
+
+    ## determine in which order the names (files) should be
+    ## listed and completed when using menu completion.
+    ## `size' to sort them by the size of the file
+    ## `links' to sort them by the number of links to the file
+    ## `modification' or `time' or `date' to sort them by the last modification time
+    ## `access' to sort them by the last access time
+    ## `inode' or `change' to sort them by the last inode change time
+    ## `reverse' to sort in decreasing order
+    ## If the style is set to any other value, or is unset, files will be
+    ## sorted alphabetically by name.
+    # zstyle ':completion:*' file-sort name
+
+    ## case-insensitive (uppercase from lowercase) completion
+    #zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
+    ## case-insensitive (all) completion
+    #zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
+    ## case-insensitive,partial-word and then substring completion
+    #zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
+    #zstyle ':completion:*' matcher-list 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
+    zstyle ':completion:*' matcher-list '' 'm:{a-z}={A-Z}' 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=* l:|=*'
+
+
+    # command for process lists, the local web server details and host completion
+    zstyle ':completion:*:urls' local 'www' '/var/www/' 'public_html'
+
+    # caching
+    [[ -d $ZDOTDIR/cache ]] && zstyle ':completion:*' use-cache yes && \
+                            zstyle ':completion::complete:*' cache-path $ZDOTDIR/cache/
+
+
+    ## offer indexes before parameters in subscripts
+    zstyle ':completion:*:*:-subscript-:*' tag-order indexes parameters
+
+    ## completion caching
+    zstyle ':completion::complete:*' use-cache 1
+    zstyle ':completion::complete:*' cache-path ~/var/cache/$HOST
+
+    ## add colors to completions
+    zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
+    zstyle ':completion:*' list-prompt %SAt %p: Hit TAB for more, or the character to insert%s
+
+    # completion:<func>:<completer>:<command>:<argument>:<tag>
+
+    ## generic completions for programs which understand GNU long options(--help)
+    #compdef _gnu_generic slrnpull make df du linda lintian
+    compdef _gnu_generic slrnpull 
+
+
+
+    		
+    # only java files for javac
+    zstyle ':completion:*:javac:*' files '*.java'
+    # no binary files for vi
+    zstyle ':completion:*:vi:*' ignored-patterns \
+        '*.(o|a|so|aux|dvi|log|swp|fig|bbl|blg|bst|idx|ind|out|toc|class|pdf|ps)'
+    zstyle ':completion:*:vim:*' ignored-patterns \
+        '*.(o|a|so|aux|dvi|log|swp|fig|bbl|blg|bst|idx|ind|out|toc|class|pdf|ps)'
+    zstyle ':completion:*:gvim:*' ignored-patterns \
+        '*.(o|a|so|aux|dvi|log|swp|fig|bbl|blg|bst|idx|ind|out|toc|class|pdf|ps)'
+    # no binary files for less
+    zstyle ':completion:*:less:*' ignored-patterns '*.(o|a|so|dvi|fig|out|class|pdf|ps)'
+    zstyle ':completion:*:zless:*' ignored-patterns '*.(o|a|so|dvi|fig|out|class|pdf|ps)'
+    # pdf for xpdf
+    zstyle ':completion:*:xpdf:*' files '*.pdf'
+    # tar files
+    zstyle ':completion:*:tar:*' files '*.tar|*.tgz|*.tz|*.tar.Z|*.tar.bz2|*.tZ|*.tar.gz'
+    # latex to the fullest
+    # for printing
+    zstyle ':completion:*:xdvi:*' files '*.dvi'
+    zstyle ':completion:*:dvips:*' files '*.dvi'
+
+    ## completions for some progs. not in default completion system
+    zstyle ':completion:*:*:mpg123:*' file-patterns \
+        '*.(mp3|MP3):mp3\ files *(-/):directories'
+
+    zstyle ':completion:*:*:ogg123:*' file-patterns \
+        '*.(ogg|OGG):ogg\ files *(-/):directories'
+
+    zstyle ':completion:*:*:diffstat:*' file-patterns \
+        '*.(diff|DIFF).gz'
+
+    zstyle ':completion:*:*:linda:*' file-patterns \
+        '*.(dsc|deb|udeb|changes)'
+
+    zstyle ':completion:*:*:lintian:*' file-patterns \
+        '*.(dsc|deb|udeb|changes)'
+
+    debian_rules() { words=(make -f debian/rules) _make }
+    compdef _debian_rules debian/rules
+
+    # completion:<func>:<completer>:<command>:<argument>:<tag>
+
+    # Don't complete uninteresting users
+    zstyle ':completion:*:*:*:users' ignored-patterns \
+        adm amanda apache avahi beaglidx bin cacti canna clamav daemon \
+        dbus distcache dovecot fax ftp games gdm gkrellmd gopher \
+        hacluster haldaemon halt hsqldb ident junkbust ldap lp mail \
+        mailman mailnull mldonkey mysql nagios \
+        named netdump news nfsnobody nobody nscd ntp nut nx openvpn \
+        operator pcap postfix postgres privoxy pulse pvm quagga radvd \
+        rpc rpcuser rpm shutdown squid sshd sync uucp vcsa xfs
+
+    # ... unless we really want to.
+    zstyle '*' single-ignored show
+
+    # disable named-directories autocompletion
+    zstyle ':completion:*:cd:*' tag-order local-directories directory-stack path-directories
+    cdpath=(.)
+
+fi
+
+# Local Variables: 
+# comment-start: "#" 
+# tab-width: 2 
+# mode: sh
+# End: 

@@ -1,0 +1,52 @@
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# Created On       : Mon Jul 25 15:18:23 2005
+#
+# Copyright © 2005-2010 Manoj Srivastava <srivasta@debian.org>
+
+# If running interactively, then:
+if [[ -n "$PS1" ]]; then
+
+    for mod in complist deltochar mathfunc ; do
+        zmodload -i zsh/${mod} 2>/dev/null || print "Notice: no ${mod} available :("
+    done
+    if zrcautoload insert-files && zle -N insert-files ; then
+        #k# Insert files and test globbing
+        bindkey "^Xf" insert-files # C-x-f
+    fi
+
+    if zrcautoload edit-command-line && zle -N edit-command-line ; then
+        #k# Edit the current line in \kbd{\$EDITOR}
+        bindkey '\ee' edit-command-line
+    fi
+
+    if [[ -n ${(k)modules[zsh/complist]} ]] ; then
+        #k# menu selection: pick item but stay in the menu
+        bindkey -M menuselect '\e^M' accept-and-menu-complete
+        # also use + and INSERT since it's easier to press repeatedly
+        bindkey -M menuselect "+" accept-and-menu-complete
+        bindkey -M menuselect "^[[2~" accept-and-menu-complete
+
+        # accept a completion and try to complete again by using menu
+        # completion; very useful with completing directories
+        # by using 'undo' one's got a simple file browser
+        bindkey -M menuselect '^o' accept-and-infer-next-history
+    fi
+fi
+
+# Local Variables: 
+# comment-start: "#" 
+# tab-width: 2 
+# mode: sh
+# End: 

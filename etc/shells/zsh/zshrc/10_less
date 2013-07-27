@@ -1,0 +1,44 @@
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# Created On       : Mon Jul 25 15:18:23 2005
+#
+# Copyright © 2005-2010 Manoj Srivastava <srivasta@debian.org>
+
+LESS="-isFRXMWP?f%f :std in .?n?m(file %i of %m) ..?ltline %lt :byte %bB?s/%s ..?e(END) ?x- Next\: %x.:?pB%pB\%..%t"
+export LESS
+export LESSCHARSET=utf-8
+if command -v lesspipe >/dev/null 2>&1 ; then
+        eval $(lesspipe)
+else
+        if command -v lessopen  >/dev/null 2>&1 ; then
+                export LESSOPEN="| lesspipe '%s'";
+                export LESSCLOSE="lesspipe '%s' '%s'";
+        fi
+fi
+
+# support colors in less
+export LESS_TERMCAP_mb=$'\E[01;31m'
+export LESS_TERMCAP_md=$'\E[01;31m'
+export LESS_TERMCAP_me=$'\E[0m'
+export LESS_TERMCAP_se=$'\E[0m'
+export LESS_TERMCAP_so=$'\E[01;44;33m'
+export LESS_TERMCAP_ue=$'\E[0m'
+export LESS_TERMCAP_us=$'\E[01;32m'
+export PAGER='less -iM'
+
+# Local Variables: 
+# comment-start: "#" 
+# tab-width: 2 
+# mode: sh
+# End: 
