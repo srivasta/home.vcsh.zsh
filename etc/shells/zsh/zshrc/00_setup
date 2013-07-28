@@ -26,6 +26,30 @@ if test -e $HOME/bin/config.guess ; then
     export MY_SYS_TYPE=`$HOME/bin/config.guess`;
 fi
 
+# Kerberos
+if command -v klist > /dev/null
+then
+    typeset -ga precmd_functions
+    if [[ ! -d ~/var/state ]]; then
+        mkdir -p  ~/var/state
+    fi
+    if [[ ! -d ~/var/state/kinit ]]; then
+        touch -d "-2 hours" ~/var/state/kinit
+    fi
+    __check_kinit() {
+        if touch ~/var/state/kinit-now 2>/dev/null \
+            && [ ~/var/state/kinit-now -nt ~/var/state/kinit ]
+        then:
+            touch -d "+1 hour" ~/var/state/kinit-now
+            if ! klist -5 -s
+            then
+                echo "Your kerberos ticket has expired - please run kinit -f"
+            fi
+        fi
+    }
+
+    precmd_functions+='__check_kinit'
+fi
 
 # the difference between `SAVEHIST' and `HISTSIZE' thanks to the
 # FAQ. `HISTSIZE' is the number of lines of history that is kept
@@ -46,8 +70,8 @@ HISTFILE=~/var/log/zsh.log
 
 autoload -U $ZDOTDIR/func/*(:t)
 
-# Local Variables: 
-# comment-start: "#" 
-# tab-width: 2 
+# Local Variables:
+# comment-start: "#"
+# tab-width: 2
 # mode: sh
-# End: 
+# End:

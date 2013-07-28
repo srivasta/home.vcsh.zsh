@@ -1,7 +1,7 @@
 #! /bin/zsh -f
-#                               -*- Mode: Sh -*- 
-# options --- 
-# Author           : Manoj Srivastava ( srivasta@glaurung.internal.golden-gryphon.com ) 
+#                               -*- Mode: Sh -*-
+# options ---
+# Author           : Manoj Srivastava ( srivasta@glaurung.internal.golden-gryphon.com )
 # Created On       : Tue Jul 26 20:52:20 2005
 # Created On Node  : glaurung.internal.golden-gryphon.com
 # Last Modified By : Manoj Srivastava
@@ -9,24 +9,24 @@
 # Last Machine Used: glaurung.internal.golden-gryphon.com
 # Update Count     : 9
 # Status           : Unknown, Use with caution!
-# HISTORY          : 
-# Description      : 
-# 
-# 
+# HISTORY          :
+# Description      :
+#
+#
 
 ###
 #Changing directories
 ###
 setopt AUTO_CD
-setopt AUTO_PUSHD    
+setopt AUTO_PUSHD
 setopt CD_ABLE_VARS
 setopt CDABLE_VARS
 # don't push the same dir twice.
-setopt PUSHD_IGNORE_DUPS  
+setopt PUSHD_IGNORE_DUPS
 setopt PUSHD_TO_HOME
 setopt NO_PUSHD_SILENT
 setopt CHASE_DOTS
-#setopt pushdminus 
+#setopt pushdminus
 setopt NOHUP
 
 # try to avoid the 'zsh: no matches found...'
@@ -35,10 +35,10 @@ setopt NONOMATCH
 ###
 ##Completion
 ###
-#setopt alwaystoend  
+#setopt alwaystoend
 setopt ALWAYS_LAST_PROMPT
 setopt ALWAYS_TO_END
-setopt AUTO_LIST 
+setopt AUTO_LIST
 setopt AUTO_MENU
 setopt BASH_AUTO_LIST
 setopt AUTO_NAME_DIRS
@@ -48,15 +48,15 @@ setopt AUTO_PARAM_SLASH
 
 setopt AUTO_REMOVE_SLASH
 
-#setopt complete_aliases  
+#setopt complete_aliases
 #setopt globcomplete
 
 # Complete even when inside a word
 setopt COMPLETE_IN_WORD
 
 setopt LIST_AMBIGUOUS
-setopt LIST_TYPES  
-setopt REC_EXACT     
+setopt LIST_TYPES
+setopt REC_EXACT
 setopt HASH_LIST_ALL
 # This is quite useful to avoid having to define extra completions for
 # all your aliases. If you uncomment the line below, you'll have to
@@ -76,14 +76,14 @@ setopt CASE_MATCH
 setopt EXTENDED_GLOB
 # use zsh style word splitting
 setopt NOSHWORDSPLIT
- 
-unsetopt GLOB_DOTS      
+
+unsetopt GLOB_DOTS
 # * shouldn't match dotfiles. ever.
 setopt NOGLOBDOTS
 setopt NO_GLOB_SUBST
 setopt REMATCH_PCRE
 
-#unsetopt EQUALS       
+#unsetopt EQUALS
 
 #source ~/.zsh/options
 ###
@@ -105,19 +105,21 @@ setopt HIST_ALLOW_CLOBBER
 setopt HIST_REDUCE_BLANKS
 
 setopt HIST_NO_STORE
+setopt HIST_VERIFY
+
 ###
 # Input/Output
 ###
-setopt NO_CLOBBER 
+setopt NO_CLOBBER
 setopt CORRECT
 setopt CORRECT_ALL
-setopt MAIL_WARNING   
+setopt MAIL_WARNING
 #setopt PATH_DIRS
-setopt RC_QUOTES 
-setopt PRINT_EXIT_VALUE      
-setopt RM_STAR_WAIT     
-setopt SHORT_LOOPS    
-setopt INTERACTIVE_COMMENTS  
+setopt RC_QUOTES
+setopt PRINT_EXIT_VALUE
+setopt RM_STAR_WAIT
+setopt SHORT_LOOPS
+setopt INTERACTIVE_COMMENTS
 setopt HASH_CMDS
 setopt HASH_DIRS
 # Whenever a command completion is attempted, make sure the entire
@@ -127,28 +129,28 @@ setopt HASH_LIST_ALL
 ###
 # Job Control
 ###
-unsetopt BG_NICE          
+unsetopt BG_NICE
 setopt AUTO_CONTINUE
-setopt AUTO_RESUME  
-setopt CHECK_JOBS 
+setopt AUTO_RESUME
+setopt CHECK_JOBS
 setopt NOTIFY
-setopt NO_HUP            
+setopt NO_HUP
 setopt LONG_LIST_JOBS
 
 ###
 # Scripts and Functions
 ###
 setopt C_BASES
-setopt MULTIOS    
+setopt MULTIOS
 
 ###
 # ZLE
 ###
 # avoid "beep"ing
-# setopt NOBEEP               
+# setopt NOBEEP
 setopt BEEP
 setopt EMACS
-   
+
 setopt FUNCTION_ARG_ZERO
 #setopt KSH_AUTOLOAD
 
@@ -166,8 +168,8 @@ is41 && setopt TRANSIENT_RPROMPT
 setopt UNSET
 
 
-# Local Variables: 
-# comment-start: "#" 
-# tab-width: 2 
+# Local Variables:
+# comment-start: "#"
+# tab-width: 2
 # mode: sh
-# End: 
+# End:
