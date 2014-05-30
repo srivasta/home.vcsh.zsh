@@ -1,0 +1,9 @@
+#git-recursive () {
+    find . -L \( -name .git -type d \) |
+        while read i; do
+            j=$(dirname $i);
+            echo "Working on $j"
+            git --git-dir=$i --work-tree=$j "$@"
+            echo
+        done
+#}

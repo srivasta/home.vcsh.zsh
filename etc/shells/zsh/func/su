@@ -3,7 +3,7 @@
 ##{
 
 	if [ $# = 0 ] ; then
-	/bin/su -c '/bin/bash  -rcfile "~srivasta/.rootrc" -i' root
+	/bin/su -s /bin/bash -p  root
 	else
 		/bin/su $@
 	fi

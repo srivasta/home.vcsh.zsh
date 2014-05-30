@@ -1,0 +1,5 @@
+#git-batch(){
+  maxgits=4
+  find -L . \( -name .git -type d \) -print0 \
+    | xargs -0 -I {} -n 1 -P $maxgits zsh -c "cd {}/.. ; git $*"
+#}

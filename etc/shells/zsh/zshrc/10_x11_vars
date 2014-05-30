@@ -21,7 +21,11 @@ if [[ -n "$DISPLAY" ]]; then
     export LINK_TIMEOUT=0
     export XAPPLRESLANGPATH=$HOME/lib/X11/app-defaults/%N:/usr/lib/X11/%L/app-defaults/%N:/usr/lib/X11/app-defaults/%N
     export XUSERFILESEARCHPATH=$HOME/lib/X11/app-defaults/%N%C:$HOME/lib/X11/app-defaults/%N
+    export XMODIFIERS=@im=none
+    export GTK_IM_MODULE=xim
+    export QT_IM_MODULE=xim
 fi
+
 
 # Local Variables: 
 # comment-start: "#" 

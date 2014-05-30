@@ -1,0 +1,9 @@
+#git-any() {
+    for pkg in *; do
+        echo $pkg
+        pushd $pkg > /dev/null
+        eval "$@"
+        popd > /dev/null
+        echo
+    done
+#}

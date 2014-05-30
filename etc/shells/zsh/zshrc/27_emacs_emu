@@ -1,0 +1,509 @@
+# -*- shell-script -*-
+
+# Zsh keybindings to more closely emulate GNU emacs than "bindkey -e".
+# This corresponds roughly to the default command set of GNU Emacs 20.
+
+# Load this file with "." or "source", then "bindkey -A emacs-emu main"
+
+# BUGS:  May mess up keybindings for execute-named-command and similar
+# special contexts that behave like a minibuffer but aren't really one.
+# Requires "setopt noflowcontrol" for accuracy of \C-q \C-s and \C-v.
+
+unfunction read-from-minibuffer 2>/dev/null
+autoload -U +X read-from-minibuffer || return 1
+
+bindkey -N emacs-emu emacs && {	# BEGIN "always" BLOCK
+bindkey -A main save-main
+bindkey -A emacs-emu main
+
+# Zsh handles prefixes differently than emacs, so these can't be used:
+
+#bindkey "^c" mode-specific-command-prefix
+#bindkey "^x" Control-X-prefix
+#bindkey "\e" ESC-prefix
+#bindkey "^h4" Prefix Command
+#bindkey "^x^j" Prefix Command
+#bindkey "^x\e" Prefix Command
+#bindkey "^x4" ctl-x-4-prefix
+#bindkey "^x5" ctl-x-5-prefix
+#bindkey "^xa" Prefix Command
+#bindkey "^xn" Prefix Command
+#bindkey "^xr" Prefix Command
+#bindkey "^xv" Prefix Command
+#bindkey "\e\e" Prefix Command
+#bindkey "^xai" Prefix Command
+#bindkey "^h" help-command
+
+### WIDGET EQUIVALENCES (needs improvement, and see UNFINSHED below) ###
+
+zle -A .undo                           advertised-undo
+zle -A .send-break                     keyboard-quit
+zle -A .down-line-or-history           next-line
+zle -A .up-line-or-history             previous-line
+zle -A .accept-line                    newline
+zle -A .self-insert                    self-insert-command
+zle -A .backward-delete-char           delete-backward-char
+zle -A .run-help                       describe-function	# Improve?
+zle -A .describe-key-briefly           describe-key		# Improve?
+zle -A .which-command                  apropos-command		# Improve?
+zle -A .accept-and-hold                eval-last-sexp		# Improve?
+zle -A .expand-or-complete             expand-abbrev		# Improve?
+zle -A .beginning-of-buffer-or-history backward-page		# Improve?
+zle -A .end-of-buffer-or-history       forward-page		# Improve?
+
+zle -A .history-incremental-search-backward isearch-backward
+zle -A .history-incremental-search-forward  isearch-forward
+
+open-line() { RBUFFER=$'\012'"$RBUFFER" }
+zle -N open-line
+
+describe-bindings() { zle -R '' ${(f)"$(bindkey)"} }
+zle -N describe-bindings
+
+list-directory() {
+    local REPLY
+    # Should run "ls -l" if NUMERIC is nonzero
+    read-from-minibuffer "List directory: " "$PWD/" || return 1
+    zle -R '' "${REPLY%/}"/*(M:t)
+}
+zle -N list-directory
+
+find-file() {
+    zmodload -i zsh/mapfile || return 1
+    local REPLY
+    zle .push-input
+    if read-from-minibuffer 'Find file: ' "$PWD/"
+    then
+	BUFFER="noglob vared mapfile[$REPLY]"
+	zle .accept-line
+    else
+	zle .get-line
+    fi
+}
+zle -N find-file
+zle -A find-file find-alternate-file
+
+find-file-read-only() {
+    local REPLY
+    zle .push-input
+    if read-from-minibuffer 'Find file: ' "$PWD/"
+    then
+	BUFFER="${READNULLCMD:-more} ${(q)REPLY}"
+	zle .accept-line
+    else
+	zle .get-line
+    fi
+}
+zle -N find-file-read-only
+
+insert-file() {
+    local REPLY
+    while [[ ! -r $REPLY ]]
+    do
+	read-from-minibuffer 'Insert file: ' "${REPLY:-$PWD/}" || return 1
+	[[ -r $REPLY ]] || zle beep
+    done
+    if zmodload -i zsh/mapfile
+    then RBUFFER="$mapfile[$REPLY]$RBUFFER"
+    else RBUFFER="$(<$REPLY)$RBUFFER"
+    fi
+}
+zle -N insert-file
+
+downcase-region() {
+    integer MARK=$MARK CURSOR=$CURSOR
+    ((MARK > CURSOR)) && zle .exchange-point-and-mark
+    BUFFER[MARK+1,CURSOR]=$BUFFER[MARK+1,CURSOR]:l
+}
+zle -N downcase-region
+
+upcase-region() {
+    integer MARK=$MARK CURSOR=$CURSOR
+    ((MARK > CURSOR)) && zle .exchange-point-and-mark
+    BUFFER[MARK+1,CURSOR]=$BUFFER[MARK+1,CURSOR]:u
+}
+zle -N downcase-region
+
+mark-whole-buffer() { CURSOR=0; MARK=$#BUFFER }
+zle -N mark-whole-buffer
+zle -A mark-whole-buffer mark-page				# Improve?
+
+scroll-up() { NUMERIC=${NUMERIC:-$[LINES-1]} ; zle previous-line }
+zle -N scroll-up
+
+scroll-down()  { NUMERIC=${NUMERIC:-$[LINES-1]} ; zle next-line }
+zle -N scroll-down
+
+scroll-left() { NUMERIC=${NUMERIC:-$COLUMNS} ; zle .vi-backward-char }
+zle -N scroll-left
+
+scroll-right() { NUMERIC=${NUMERIC:-$COLUMNS} ; zle .vi-forward-char }
+zle -N scroll-right
+
+count-lines-page() {
+    integer a=${RBUFFER:+${(ps:\n:W)#RBUFFER}}
+    integer b=${LBUFFER:+${(ps:\n:W)#LBUFFER}}
+    integer n=${BUFFER:+${(ps:\n:W)#BUFFER}}
+    zle -M "Page has $n lines ($b + $a)"
+}
+zle -N count-lines-page
+
+backward-kill-sentence() {
+    MARK=$CURSOR
+    repeat ${NUMERIC:-1}
+    do
+	while [[ $LBUFFER[-1] = [\;\|\&] ]]; do ((--CURSOR)); done
+	CURSOR=${#${(M)LBUFFER##*[;|&]}}
+    done
+    zle .kill-region
+}
+zle -N backward-kill-sentence
+
+### KEY BINDING EQUIVALENCES (see UNFINISHED below) ###
+
+bindkey "^@" set-mark-command
+bindkey "^a" beginning-of-line
+bindkey "^b" backward-char
+bindkey "^d" delete-char
+bindkey "^e" end-of-line
+bindkey "^f" forward-char
+bindkey "^g" keyboard-quit
+#bindkey "^i" indent-for-tab-command
+#bindkey "^j" newline-and-indent
+bindkey "^k" kill-line
+#bindkey "^l" recenter
+bindkey "^j" newline
+bindkey "^n" next-line
+bindkey "^o" open-line
+bindkey "^p" previous-line
+[[ -o noflowcontrol ]] &&
+    bindkey "^q" quoted-insert
+bindkey "^r" isearch-backward
+bindkey "^s" isearch-forward
+bindkey "^t" transpose-chars
+bindkey "^u" universal-argument
+[[ -o noflowcontrol ]] &&
+    bindkey "^v" scroll-up || bindkey "^v" quoted-insert
+bindkey "^w" kill-region
+bindkey "^y" yank
+#bindkey "^z" suspend-emacs
+#bindkey "^\\\\" toggle-input-method
+#bindkey "^]" abort-recursive-edit
+bindkey "^_" undo
+bindkey -R " -~" .self-insert
+bindkey "^?" delete-backward-char
+bindkey -R $'\240'-$'\377' .self-insert
+
+
+### MOSTLY UNFINISHED BELOW THIS LINE ###
+
+#bindkey "^hh" view-hello-file
+#bindkey "^hC" describe-coding-system
+#bindkey "^hI" describe-input-method
+#bindkey "^h^\\\\" describe-input-method
+#bindkey "^hL" describe-language-environment
+#bindkey "^h^l" describe-language-environment
+#bindkey "^hq" help-quit
+#bindkey "^hv" describe-variable
+bindkey "^hw" where-is
+#bindkey "^ht" help-with-tutorial
+#bindkey "^hs" describe-syntax
+#bindkey "^hp" finder-by-keyword
+#bindkey "^hn" view-emacs-news
+#bindkey "^h^n" view-emacs-news
+#bindkey "^hm" describe-mode
+#bindkey "^hl" view-lossage
+#bindkey "^h^i" info-lookup-symbol
+#bindkey "^h^k" Info-goto-emacs-key-command-node
+#bindkey "^h^f" Info-goto-emacs-command-node
+#bindkey "^hi" info
+#bindkey "^hF" view-emacs-FAQ
+bindkey "^hf" describe-function
+bindkey "^hd" describe-function
+bindkey "^hk" describe-key
+bindkey "^hc" describe-key-briefly
+bindkey "^hb" describe-bindings
+bindkey "^ha" apropos-command
+#bindkey "^h^p" describe-project
+#bindkey "^h^w" describe-no-warranty
+#bindkey "^h^d" describe-distribution
+#bindkey "^h^c" describe-copying
+#bindkey "^h?" help-for-help
+#bindkey "^h^h" help-for-help
+
+#bindkey "^x^@" pop-global-mark
+#bindkey "^x^b" list-buffers
+#bindkey "^x^c" save-buffers-kill-emacs
+bindkey "^x^d" list-directory
+bindkey "^x^e" eval-last-sexp
+bindkey "^x^f" find-file
+#bindkey "^x^i" indent-rigidly
+#bindkey "^x^k" edit-kbd-macro
+bindkey "^x^l" downcase-region
+#bindkey "^x^n" set-goal-column
+#bindkey "^x^o" delete-blank-lines
+bindkey "^x^p" mark-page
+#bindkey "^x^q" vc-toggle-read-only
+bindkey "^x^r" find-file-read-only
+#bindkey "^x^s" save-buffer		# accept-and-hold in vared map?
+bindkey "^x^t" transpose-lines
+bindkey "^x^u" upcase-region
+bindkey "^x^v" find-alternate-file
+#bindkey "^x^w" write-file
+bindkey "^x^x" exchange-point-and-mark
+#bindkey "^x^z" suspend-emacs
+#bindkey "^x$" set-selective-display
+bindkey "^x'" expand-abbrev
+#bindkey "^x(" start-kbd-macro
+#bindkey "^x)" end-kbd-macro
+#bindkey "^x+" balance-windows
+#bindkey "^x-" shrink-window-if-larger-than-buffer
+#bindkey "^x." set-fill-prefix
+#bindkey "^x/" point-to-register-compatibility-binding
+#bindkey "^x0" delete-window
+#bindkey "^x1" delete-other-windows
+#bindkey "^x2" split-window-vertically
+#bindkey "^x3" split-window-horizontally
+#bindkey "^x6" 2C-command
+#bindkey "^x8" 8859-1-map
+#bindkey "^x;" set-comment-column
+bindkey "^x<" scroll-left
+bindkey "^x=" what-cursor-position
+bindkey "^x>" scroll-right
+bindkey "^x[" backward-page
+bindkey "^x]" forward-page
+#bindkey "^x^" enlarge-window
+#bindkey "^x`" next-error
+#bindkey "^xb" switch-to-buffer
+#bindkey "^xd" dired
+#bindkey "^xe" call-last-kbd-macro
+#bindkey "^xf" set-fill-column
+#bindkey "^xg" insert-register-compatibility-binding
+bindkey "^xh" mark-whole-buffer
+#bindkey "^xi" insert-file
+#bindkey "^xj" jump-to-register-compatibility-binding
+bindkey "^xk" kill-buffer
+bindkey "^xl" count-lines-page
+#bindkey "^xm" compose-mail
+#bindkey "^xo" other-window
+#bindkey "^xq" kbd-macro-query
+#bindkey "^xs" save-some-buffers
+bindkey "^xu" advertised-undo
+#bindkey "^xx" copy-to-register-compatibility-binding
+#bindkey "^xz" repeat
+#bindkey "^x{" shrink-window-horizontally
+#bindkey "^x}" enlarge-window-horizontally
+bindkey "^x^?" backward-kill-sentence
+
+#bindkey "^x^@"	pop-global-mark
+
+
+### MAJOR REPAIRS NEEDED BELOW THIS LINE ###
+return 0
+
+bindkey '\e^@' mark-sexp
+bindkey '\e^a' beginning-of-defun
+bindkey '\e^b' backward-sexp
+bindkey '\e^c' exit-recursive-edit
+bindkey '\e^d' down-list
+bindkey '\e^e' end-of-defun
+bindkey '\e^f' forward-sexp
+bindkey '\e^h' mark-defun
+bindkey '\e\t' complete-symbol
+bindkey '\e^j' indent-new-comment-line
+bindkey '\e^k' kill-sexp
+bindkey '\e^l' reposition-window
+bindkey '\e^n' forward-list
+bindkey '\e^o' split-line
+bindkey '\e^p' backward-list
+bindkey '\e^r' isearch-backward-regexp
+bindkey '\e^s' isearch-forward-regexp
+bindkey '\e^t' transpose-sexps
+bindkey '\e^u' backward-up-list
+bindkey '\e^v' scroll-other-window
+bindkey '\e^w' append-next-kill
+bindkey '\e^\\\\' indent-region
+bindkey '\eSPC' just-one-space
+bindkey '\e!' shell-command
+bindkey '\e$' ispell-word
+bindkey '\e%' query-replace
+bindkey "\e'" abbrev-prefix-mark
+bindkey '\e(' insert-parentheses
+bindkey '\e)' move-past-close-and-reindent
+bindkey '\e*' pop-tag-mark
+bindkey '\e,' tags-loop-continue
+bindkey '\e-' negative-argument
+bindkey '\e.' find-tag
+bindkey '\e/' dabbrev-expand
+bindkey '\e0' digit-argument
+bindkey '\e1' digit-argument
+bindkey '\e2' digit-argument
+bindkey '\e3' digit-argument
+bindkey '\e4' digit-argument
+bindkey '\e5' digit-argument
+bindkey '\e6' digit-argument
+bindkey '\e7' digit-argument
+bindkey '\e8' digit-argument
+bindkey '\e9' digit-argument
+bindkey '\e:' eval-expression
+bindkey '\e;' indent-for-comment
+bindkey '\e<' beginning-of-buffer
+bindkey '\e=' count-lines-region
+bindkey '\e>' end-of-buffer
+bindkey '\e@' mark-word
+bindkey '\e\\\\' delete-horizontal-space
+bindkey '\e^' delete-indentation
+bindkey '\e`' tmm-menubar
+bindkey '\ea' backward-sentence
+bindkey '\eb' backward-word
+bindkey '\ec' capitalize-word
+bindkey '\ed' kill-word
+bindkey '\ee' forward-sentence
+bindkey '\ef' forward-word
+bindkey '\eg' facemenu-keymap
+bindkey '\eh' mark-paragraph
+bindkey '\ei' tab-to-tab-stop
+bindkey '\ej' indent-new-comment-line
+bindkey '\ek' kill-sentence
+bindkey '\el' downcase-word
+bindkey '\em' back-to-indentation
+bindkey '\eq' fill-paragraph
+bindkey '\er' move-to-window-line
+bindkey '\et' transpose-words
+bindkey '\eu' upcase-word
+bindkey '\ev' scroll-down
+bindkey '\ew' kill-ring-save
+bindkey '\ex' execute-extended-command
+bindkey '\ey' yank-pop
+bindkey '\ez' zap-to-char
+bindkey '\e{' backward-paragraph
+bindkey '\e|' shell-command-on-region
+bindkey '\e}' forward-paragraph
+bindkey '\e~' not-modified
+bindkey '\e^?' backward-kill-word
+
+bindkey '\e^%' query-replace-regexp
+bindkey '\e^.' find-tag-regexp
+bindkey '\e^/' dabbrev-completion
+bindkey '\e S-C-v'	scroll-other-window-down
+bindkey '\e^SPC'	mark-sexp
+bindkey '\e^-' negative-argument
+bindkey '\e^9' digit-argument
+bindkey '\e^8' digit-argument
+bindkey '\e^7' digit-argument
+bindkey '\e^6' digit-argument
+bindkey '\e^5' digit-argument
+bindkey '\e^4' digit-argument
+bindkey '\e^3' digit-argument
+bindkey '\e^2' digit-argument
+bindkey '\e^1' digit-argument
+bindkey '\e^0' digit-argument
+bindkey '^h4i' info-other-window
+
+#  bindkey '^x^jl'	set-language-environment
+#  bindkey '^x^jc'	universal-coding-system-argument
+#  bindkey '^x^j^\\\\'	set-input-method
+#  bindkey '^x^jX'	set-next-selection-coding-system
+#  bindkey '^x^jx'	set-selection-coding-system
+#  bindkey '^x^jp'	set-buffer-process-coding-system
+#  bindkey '^x^jk'	set-keyboard-coding-system
+#  bindkey '^x^jt'	set-terminal-coding-system
+#  bindkey '^x^jf'	set-buffer-file-coding-system
+
+#  bindkey '^x\e:'	repeat-complex-command
+#  bindkey '^x\e\e'	repeat-complex-command
+
+#  bindkey '^x40' kill-buffer-and-window
+#  bindkey '^x4.' find-tag-other-window
+#  bindkey '^x4d' dired-other-window
+#  bindkey '^x4a' add-change-log-entry-other-window
+#  bindkey '^x4^o'	display-buffer
+#  bindkey '^x4b' switch-to-buffer-other-window
+#  bindkey '^x4^f'	find-file-other-window
+#  bindkey '^x4r' find-file-read-only-other-window
+#  bindkey '^x4f' find-file-other-window
+#  bindkey '^x4m' compose-mail-other-window
+
+#  bindkey '^x5o' other-frame
+#  bindkey '^x50' delete-frame
+#  bindkey '^x52' make-frame-command
+#  bindkey '^x5.' find-tag-other-frame
+#  bindkey '^x5d' dired-other-frame
+#  bindkey '^x5r' find-file-read-only-other-frame
+#  bindkey '^x5^f'	find-file-other-frame
+#  bindkey '^x5f' find-file-other-frame
+#  bindkey '^x5b' switch-to-buffer-other-frame
+#  bindkey '^x5m' compose-mail-other-frame
+
+#bindkey '^xan' expand-jump-to-next-slot
+#bindkey '^xap' expand-jump-to-previous-slot
+bindkey "^xa'" expand-abbrev
+bindkey '^xae' expand-abbrev
+#bindkey '^xa-' inverse-add-global-abbrev
+#bindkey '^xa+' add-mode-abbrev
+#bindkey '^xag' add-global-abbrev
+#bindkey '^xa^a' add-mode-abbrev
+#bindkey '^xal' add-mode-abbrev
+#bindkey '^xail' inverse-add-mode-abbrev
+#bindkey '^xaig' inverse-add-global-abbrev
+
+#  bindkey '^xnp' narrow-to-page
+#  bindkey '^xnd' narrow-to-defun
+#  bindkey '^xnw' widen
+#  bindkey '^xnn' narrow-to-region
+
+#  bindkey '^xrl' bookmark-bmenu-list
+#  bindkey '^xrm' bookmark-set
+#  bindkey '^xrb' bookmark-jump
+#  bindkey '^xrf' frame-configuration-to-register
+#  bindkey '^xrw' window-configuration-to-register
+#  bindkey '^xrt' string-rectangle
+#  bindkey '^xro' open-rectangle
+#  bindkey '^xry' yank-rectangle
+#  bindkey '^xrd' delete-rectangle
+#  bindkey '^xrk' kill-rectangle
+#  bindkey '^xrc' clear-rectangle
+#  bindkey '^xr+' increment-register
+#  bindkey '^xrn' number-to-register
+#  bindkey '^xrr' copy-rectangle-to-register
+#  bindkey '^xrg' insert-register
+#  bindkey '^xri' insert-register
+#  bindkey '^xrx' copy-to-register
+#  bindkey '^xrs' copy-to-register
+#  bindkey '^xrj' jump-to-register
+#  bindkey '^xr ' point-to-register
+#  bindkey '^xr^ ' point-to-register
+#  bindkey '^xr^@' point-to-register
+
+#  bindkey '^xv~' vc-version-other-window
+#  bindkey '^xv=' vc-diff
+#  bindkey '^xvv' vc-next-action
+#  bindkey '^xvu' vc-revert-buffer
+#  bindkey '^xvs' vc-create-snapshot
+#  bindkey '^xvr' vc-retrieve-snapshot
+#  bindkey '^xvm' vc-merge
+#  bindkey '^xvl' vc-print-log
+#  bindkey '^xvi' vc-register
+#  bindkey '^xvh' vc-insert-headers
+#  bindkey '^xvg' vc-annotate
+#  bindkey '^xvd' vc-directory
+#  bindkey '^xvc' vc-cancel-version
+#  bindkey '^xva' vc-update-change-log
+
+#  bindkey '\e\e\e' keyboard-escape-quit
+#  bindkey '\e\e:' eval-expression
+
+#  bindkey '\egd' facemenu-set-default
+#  bindkey '\egb' facemenu-set-bold
+#  bindkey '\egi' facemenu-set-italic
+#  bindkey '\egl' facemenu-set-bold-italic
+#  bindkey '\egu' facemenu-set-underline
+#  bindkey '\ego' facemenu-set-face
+
+} always {
+
+#bindkey -m
+bindkey -A save-main main
+bindkey -D save-main
+
+}

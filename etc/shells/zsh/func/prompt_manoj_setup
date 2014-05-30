@@ -1,7 +1,7 @@
 #! /bin/zsh -f
-#                               -*- Mode: Sh -*- 
-# prompt_manoj_setup --- 
-# Author           : Manoj Srivastava ( srivasta@glaurung.internal.golden-gryphon.com ) 
+#                               -*- Mode: Sh -*-
+# prompt_manoj_setup ---
+# Author           : Manoj Srivastava ( srivasta@glaurung.internal.golden-gryphon.com )
 # Created On       : Thu Jul 28 12:53:34 2005
 # Created On Node  : glaurung.internal.golden-gryphon.com
 # Last Modified By : Manoj Srivastava
@@ -9,11 +9,11 @@
 # Last Machine Used: anzu.internal.golden-gryphon.com
 # Update Count     : 213
 # Status           : Unknown, Use with caution!
-# HISTORY          : 
-# Description      : 
-# 
+# HISTORY          :
+# Description      :
+#
 # Copyright © 2008 Manoj Srivastava <srivasta@debian.org
-# 
+#
 # This file is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
@@ -31,7 +31,7 @@
 #    <URL:http://www.gnu.org/copyleft/gpl.html>.  You may also obtain
 #    it by writing to the Free Software Foundation, Inc., 51 Franklin
 #    St, Fifth Floor, Boston, MA 02110-1301 USA
-# 
+#
 
 prompt_manoj_help () {
   cat <<'EOF'
@@ -58,7 +58,7 @@ LISTPROMPT=''
 SPROMPT='zsh: correct '%R' to '%r' ? ([Y]es/[N]o/[E]dit/[A]bort) '
 
 
-typeset -Ag ansi_colors other_colors term_color_fg term_color_bg 
+typeset -Ag ansi_colors other_colors term_color_fg term_color_bg
 
 # The problem with colors in terminal emulators is that there are two
 # distinct mechanisms for color: the first one is the Tektronics or
@@ -76,26 +76,26 @@ ansi_colors=(
 other_colors=(
     black     0                cyan      3                yellow    6
     blue      1                red       4                white     7
-    green     2                magenta   5 
+    green     2                magenta   5
 )
 
 # I use the following Xresources, which go better with my dark xterms
-## *VT100*color0:  black                                         
-## *VT100*color1:  rgb:FF/33/33    !red                          
-## *VT100*color2:  rgb:66/FF/33    !green                        
-## *VT100*color3:  rgb:FF/EB/33    !yellow                       
-## *VT100*color4:  rgb:33/A3/FF    !blue                         
-## *VT100*color5:  rgb:70/33/FF    !magenta                      
-## *VT100*color6:  rgb:33/FF/AD    !cyan                         
-## *VT100*color7:  cornsilk        !white rgb:FF/33/E0  violet   
-## *VT100*color8:  DarkSlateGrey                                 
-## *VT100*color9:  rgb:FF/99/99    !light red                    
-## *VT100*color10: rgb:B3/FF/99    !light green                  
-## *VT100*color11: rgb:FF/F5/99    !light yellow                 
-## *VT100*color12: rgb:99/D1/FF    !light blue                   
-## *VT100*color13: rgb:B8/99/FF    !light magenta                
-## *VT100*color14: rgb:99/FF/D6    !light cyan                   
-## *VT100*color15: rgb:FF/99/F0    !light violet                 
+## *VT100*color0:  black
+## *VT100*color1:  rgb:FF/33/33    !red
+## *VT100*color2:  rgb:66/FF/33    !green
+## *VT100*color3:  rgb:FF/EB/33    !yellow
+## *VT100*color4:  rgb:33/A3/FF    !blue
+## *VT100*color5:  rgb:70/33/FF    !magenta
+## *VT100*color6:  rgb:33/FF/AD    !cyan
+## *VT100*color7:  cornsilk        !white rgb:FF/33/E0  violet
+## *VT100*color8:  DarkSlateGrey
+## *VT100*color9:  rgb:FF/99/99    !light red
+## *VT100*color10: rgb:B3/FF/99    !light green
+## *VT100*color11: rgb:FF/F5/99    !light yellow
+## *VT100*color12: rgb:99/D1/FF    !light blue
+## *VT100*color13: rgb:B8/99/FF    !light magenta
+## *VT100*color14: rgb:99/FF/D6    !light cyan
+## *VT100*color15: rgb:FF/99/F0    !light violet
 
 # Since there are distinct command to set up a foreground color versus
 # a back ground color, and the command pairs depend on whether or not
@@ -278,7 +278,7 @@ prompt_manoj_acpi_color () {
 # prompt (since the latter uses up line real estate))
 prompt_manoj_chpwd () {
     setopt noxtrace localoptions
-    if [ "$TERM" = "xterm" ] || [ "$TERM" = "xterm-debian" ] || 
+    if [ "$TERM" = "xterm" ] || [ "$TERM" = "xterm-debian" ] ||
         [ "$TERM" = "Eterm" ] || [ "$TERM" = "xterm-256color" ]; then
         workdir=$(print -P '%30<<%~')
         if [[ $#workdir -gt 25 ]]; then
@@ -299,7 +299,7 @@ prompt_manoj_chpwd () {
                 ;;
             *)
                 :
-        esac 
+        esac
     else
         workdir=$(print -P '%20<<%~')
         if [[ $#workdir -gt 18 ]]; then
@@ -313,281 +313,281 @@ prompt_manoj_chpwd () {
     fi
 }
 
-# Given a base directory as the first argument, use PWD o detemine
-# subdirectory of the repo root we are in.
-__sub_dir() {
-    local sub_dir
-    sub_dir=$(readlink -f "${PWD}")
-    sub_dir=${sub_dir#$1}
-    echo ${sub_dir#/}
-}
-# In the following, set up the base_dir for the repository, the
-# sub_dir within that repository, the branch we are in, and if we are
-# in the middle of complex VCS operations.  Each functions sets these
-# variables for one kind of repository.
+# # # Given a base directory as the first argument, use PWD o detemine
+# # # subdirectory of the repo root we are in.
+# # __sub_dir() {
+# #     local sub_dir
+# #     sub_dir=$(readlink -f "${PWD}")
+# #     sub_dir=${sub_dir#$1}
+# #     echo ${sub_dir#/}
+# # }
+# # # In the following, set up the base_dir for the repository, the
+# # # sub_dir within that repository, the branch we are in, and if we are
+# # # in the middle of complex VCS operations.  Each functions sets these
+# # # variables for one kind of repository.
 
-# This is for arch
-__arch_dir() {
-    base_dir=$(tla tree-root 2>/dev/null) || return 1
-    base_dir=$(readlink -f "$base_dir")
-    sub_dir=$(__sub_dir "${base_dir}")
-    branch=$(tla tree-id)
-    branch=${branch##[^/]*/}
-    vcs="arch"
-}
+# # # This is for arch
+# # __arch_dir() {
+# #     base_dir=$(tla tree-root 2>/dev/null) || return 1
+# #     base_dir=$(readlink -f "$base_dir")
+# #     sub_dir=$(__sub_dir "${base_dir}")
+# #     branch=$(tla tree-id)
+# #     branch=${branch##[^/]*/}
+# #     vcs="arch"
+# # }
 
-# bzr
-__bzr_dir() {
-    local branch_nick revno
-    base_dir=$(bzr info 2>/dev/null) || return 1
-    base_dir=$(echo "$base_dir" | sed -rne 's, *branch root: ,,p')
-    if [[ "$base_dir" == "." ]]; then
-        base_dir=$PWD
-    else
-        base_dir=$(readlink -f "$base_dir")
-    fi
-    sub_dir=$(__sub_dir "${base_dir}")
-    bzr version-info | while read i j; do
-        case "$i" in
-            revno:) revno="$j";;
-            branch-nick:) branch_nick="$j";;
-        esac
-    done
-    branch="bzr:${branch}@$revno"
-    vcs=bzr
-}
+# # # bzr
+# # __bzr_dir() {
+# #     local branch_nick revno
+# #     base_dir=$(bzr info 2>/dev/null) || return 1
+# #     base_dir=$(echo "$base_dir" | sed -rne 's, *branch root: ,,p')
+# #     if [[ "$base_dir" == "." ]]; then
+# #         base_dir=$PWD
+# #     else
+# #         base_dir=$(readlink -f "$base_dir")
+# #     fi
+# #     sub_dir=$(__sub_dir "${base_dir}")
+# #     bzr version-info | while read i j; do
+# #         case "$i" in
+# #             revno:) revno="$j";;
+# #             branch-nick:) branch_nick="$j";;
+# #         esac
+# #     done
+# #     branch="bzr:${branch}@$revno"
+# #     vcs=bzr
+# # }
 
-# git. 
-__git_dir() {
-    base_dir=$(git rev-parse --show-cdup 2>/dev/null) || return 1
-    if [[ -n "$base_dir" ]]; then
-        base_dir=$(readlink -f "$base_dir")
-    else
-        base_dir=$PWD
-    fi
-    sub_dir=$(git rev-parse --show-prefix)
-    sub_dir=${sub_dir%/}
-    branch=$(git symbolic-ref -q HEAD || git name-rev --name-only HEAD 2>/dev/null)
+# # # git.
+# # __git_dir() {
+# #     base_dir=$(git rev-parse --show-cdup 2>/dev/null) || return 1
+# #     if [[ -n "$base_dir" ]]; then
+# #         base_dir=$(readlink -f "$base_dir")
+# #     else
+# #         base_dir=$PWD
+# #     fi
+# #     sub_dir=$(git rev-parse --show-prefix)
+# #     sub_dir=${sub_dir%/}
+# #     branch=$(git symbolic-ref -q HEAD || git name-rev --name-only HEAD 2>/dev/null)
 
-    if test -d "$base_dir/../.dotest"; then
-        if test -f "$base_dir/../.dotest/rebasing"; then
-            vcs_op="rebase"
-        elif test -f "$base_dir/../.dotest/applying"; then
-            vcs_op="am"
-        else
-            vcs_op="am/rebase"
-        fi
-    elif test -f "$base_dir/.dotest-merge/interactive"; then
-        vcs_op="rebase -i"
-        branch="$(cat "$base_dir/.dotest-merge/head-name")"
-    elif test -d "$base_dir/.dotest-merge"; then
-        vcs_op="rebase -m"
-        branch="$(cat "$base_dir/.dotest-merge/head-name")"
-    elif test -f "$base_dir/MERGE_HEAD"; then
-        vcs_op="merge"
-    else
-        if test -f "$base_dir/BISECT_LOG"; then
-            vcs_op="bisect"
-            branch="$(git symbolic-ref HEAD 2>/dev/null)" || \
-                branch="$(git describe --exact-match HEAD 2>/dev/null)" || \
-                branch="$(cut -c1-7 "$base_dir/HEAD")..."
+# #     if test -d "$base_dir/../.dotest"; then
+# #         if test -f "$base_dir/../.dotest/rebasing"; then
+# #             vcs_op="rebase"
+# #         elif test -f "$base_dir/../.dotest/applying"; then
+# #             vcs_op="am"
+# #         else
+# #             vcs_op="am/rebase"
+# #         fi
+# #     elif test -f "$base_dir/.dotest-merge/interactive"; then
+# #         vcs_op="rebase -i"
+# #         branch="$(cat "$base_dir/.dotest-merge/head-name")"
+# #     elif test -d "$base_dir/.dotest-merge"; then
+# #         vcs_op="rebase -m"
+# #         branch="$(cat "$base_dir/.dotest-merge/head-name")"
+# #     elif test -f "$base_dir/MERGE_HEAD"; then
+# #         vcs_op="merge"
+# #     else
+# #         if test -f "$base_dir/BISECT_LOG"; then
+# #             vcs_op="bisect"
+# #             branch="$(git symbolic-ref HEAD 2>/dev/null)" || \
+# #                 branch="$(git describe --exact-match HEAD 2>/dev/null)" || \
+# #                 branch="$(cut -c1-7 "$base_dir/HEAD")..."
 
-        fi
-    fi
-    branch=${branch#refs/heads/}
-    dirty=''
-    # if (! ((git diff --cached --quiet) && (git diff --quiet))); then
-    if ! git diff --cached --quiet; then
-        dirty='S'
-    fi
-    if ! git diff --quiet; then
-        dirty="${dirty}D"
-    fi
-    tracked=''
-    if [[ $(git rev-parse --is-inside-work-tree 2> /dev/null) == 'true' ]] && 
-        git status --porcelain | grep '??' &> /dev/null ; then
-            #[[ -n $(git ls-files --others --exclude-standard) ]] ; then
-        tracked="U"
-    fi
-    remote=''
-    ahead=0
-    behind=0
-    tracking=''
-    upstream=''
-    relative=''
-    remote=$(git config branch.${branch}.remote || true)
-    if [[ -n "$remote" ]]; then
-        tracking=${$(git config branch.${branch}.merge)/refs\/heads\/}
-        upstream=${$(git rev-parse --verify $remote/$tracking --symbolic-full-name)/refs\/remotes\/}
-        ahead=$(git  rev-list ${upstream}..HEAD | wc -l)
-        behind=$(git rev-list HEAD..${upstream} | wc -l)
-        if [[ -n "$ahead" ]] && [[ $ahead -gt 0 ]]; then
-            relative="+${ahead}"
-        elif [[ -n "$behind" ]] && [[ $behind -gt 0 ]]; then
-            relative="-${behind}"
-        fi
-    fi
-    # echo >&2 "dirty=$dirty"
-    # echo >&2 "tracked=$tracked"
-    # echo >&2 "remote=$remote"
-    # echo >&2 "ahead=$ahead"
-    # echo >&2 "tracking=$tracking"
-    # echo >&2 "upstream=$upstream"
-    # echo >&2 "relative=$relative"
-    vcs="git"
-}
+# #         fi
+# #     fi
+# #     branch=${branch#refs/heads/}
+# #     dirty=''
+# #     # if (! ((git diff --cached --quiet) && (git diff --quiet))); then
+# #     if ! git diff --cached --quiet; then
+# #         dirty='S'
+# #     fi
+# #     if ! git diff --quiet; then
+# #         dirty="${dirty}D"
+# #     fi
+# #     tracked=''
+# #     if [[ $(git rev-parse --is-inside-work-tree 2> /dev/null) == 'true' ]] &&
+# #         git status --porcelain | grep '??' &> /dev/null ; then
+# #             #[[ -n $(git ls-files --others --exclude-standard) ]] ; then
+# #         tracked="U"
+# #     fi
+# #     remote=''
+# #     ahead=0
+# #     behind=0
+# #     tracking=''
+# #     upstream=''
+# #     relative=''
+# #     remote=$(git config branch.${branch}.remote || true)
+# #     if [[ -n "$remote" ]]; then
+# #         tracking=${$(git config branch.${branch}.merge)/refs\/heads\/}
+# #         upstream=${$(git rev-parse --verify $remote/$tracking --symbolic-full-name)/refs\/remotes\/}
+# #         ahead=$(git  rev-list ${upstream}..HEAD | wc -l)
+# #         behind=$(git rev-list HEAD..${upstream} | wc -l)
+# #         if [[ -n "$ahead" ]] && [[ $ahead -gt 0 ]]; then
+# #             relative="+${ahead}"
+# #         elif [[ -n "$behind" ]] && [[ $behind -gt 0 ]]; then
+# #             relative="-${behind}"
+# #         fi
+# #     fi
+# #     # echo >&2 "dirty=$dirty"
+# #     # echo >&2 "tracked=$tracked"
+# #     # echo >&2 "remote=$remote"
+# #     # echo >&2 "ahead=$ahead"
+# #     # echo >&2 "tracking=$tracking"
+# #     # echo >&2 "upstream=$upstream"
+# #     # echo >&2 "relative=$relative"
+# #     vcs="git"
+# # }
 
-# svn
-__svn_dir() {
-    [[ -d ".svn" ]] || return 1
-    base_dir="."
-    while [[ -d "$base_dir/../.svn" ]]; do base_dir="$base_dir/.."; done
-    base_dir=$(readlink -f "$base_dir")
-    sub_dir=$(__sub_dir "${base_dir}")
-    branch=$(svn info "$base_dir" | awk '/^URL/ { sub(".*/","",$0); r=$0 } /^Revision/ { sub("[^0-9]*","",$0); print r":"$0 }')
-    vcs="svn"
-}
+# # # svn
+# # __svn_dir() {
+# #     [[ -d ".svn" ]] || return 1
+# #     base_dir="."
+# #     while [[ -d "$base_dir/../.svn" ]]; do base_dir="$base_dir/.."; done
+# #     base_dir=$(readlink -f "$base_dir")
+# #     sub_dir=$(__sub_dir "${base_dir}")
+# #     branch=$(svn info "$base_dir" | awk '/^URL/ { sub(".*/","",$0); r=$0 } /^Revision/ { sub("[^0-9]*","",$0); print r":"$0 }')
+# #     vcs="svn"
+# # }
 
-# svk
-__svk_dir() {
-    [[ -f ~/.svk/config ]] || return 1
-    base_dir=$(awk '/: *$/ { sub(/^ */,"",$0); sub(/: *$/,"",$0); if (match("'${PWD}'", $0"(/|$)")) { print $0; d=1; } } /depotpath/ && d == 1 { sub(".*/","",$0); r=$0 } /revision/ && d == 1 { print r ":" $2; exit 1 }' ~/.svk/config) && return 1
-    branch=${base_dir##*
-    }
-    base_dir=${base_dir%%
-        *}
-    sub_dir=$(__sub_dir "${base_dir}")
-    vcs="svk"
-}
+# # # svk
+# # __svk_dir() {
+# #     [[ -f ~/.svk/config ]] || return 1
+# #     base_dir=$(awk '/: *$/ { sub(/^ */,"",$0); sub(/: *$/,"",$0); if (match("'${PWD}'", $0"(/|$)")) { print $0; d=1; } } /depotpath/ && d == 1 { sub(".*/","",$0); r=$0 } /revision/ && d == 1 { print r ":" $2; exit 1 }' ~/.svk/config) && return 1
+# #     branch=${base_dir##*
+# #     }
+# #     base_dir=${base_dir%%
+# #         *}
+# #     sub_dir=$(__sub_dir "${base_dir}")
+# #     vcs="svk"
+# # }
 
-# mercurial
-__hg_dir() {
-    
-    base_dir=$(hg root 2>/dev/null) || return 1
-    base_dir=$(readlink -f "$base_dir")
-    sub_dir=$(__sub_dir "${base_dir}")
-    #branch=$(< "${base_dir}/.hg/branch")
-    branch="hg:$(hg branch)"
-    vcs="hg"
-}
-# return formatted path components (prefix branch postfix) given the
-# repository root and the branch.
-__vcs_get_prompt_path_components()
-{
-  # shortcut: if there are no arguments, return a default prompt
-  if [ -z "${1:-}" ]; then
-    pwdnamed="%${_PROMPT_PATH_MAXLEN}<..<%~%<<"
-    pwdnamed="${(%)pwdnamed}"
-    echo "$pwdnamed"
-    return
-  fi
+# # # mercurial
+# # __hg_dir() {
 
-  local reporoot branch workdir
-  workdir=''
-  reporoot="${1%%/}"
-  branch="$2"
+# #     base_dir=$(hg root 2>/dev/null) || return 1
+# #     base_dir=$(readlink -f "$base_dir")
+# #     sub_dir=$(__sub_dir "${base_dir}")
+# #     #branch=$(< "${base_dir}/.hg/branch")
+# #     branch="hg:$(hg branch)"
+# #     vcs="hg"
+# # }
+# # # return formatted path components (prefix branch postfix) given the
+# # # repository root and the branch.
+# # __vcs_get_prompt_path_components()
+# # {
+# #   # shortcut: if there are no arguments, return a default prompt
+# #   if [ -z "${1:-}" ]; then
+# #     pwdnamed="%${_PROMPT_PATH_MAXLEN}<..<%~%<<"
+# #     pwdnamed="${(%)pwdnamed}"
+# #     echo "$pwdnamed"
+# #     return
+# #   fi
 
-  # replace named directories in the PWD, we need thi for the proper component
-  # count later
-  local pwdnamed="%~"
-  pwdnamed="${(%)pwdnamed}"
+# #   local reporoot branch workdir
+# #   workdir=''
+# #   reporoot="${1%%/}"
+# #   branch="$2"
 
-  # store paths in arrays for component count calculation
-  typeset -la apwd apwdnamed areporoot
-  apwd=(${(s:/:)PWD})
-  apwdnamed=(${(s:/:)pwdnamed})
-  areporoot=(${(s:/:)reporoot})
+# #   # replace named directories in the PWD, we need thi for the proper component
+# #   # count later
+# #   local pwdnamed="%~"
+# #   pwdnamed="${(%)pwdnamed}"
 
-  # get the number of leading and trailing path components. Since we're using
-  # %~ later and then /home/madduck suddenly becomes ~, which is 1, not
-  # 2 components, we calculate the leading component count by using the named
-  # path and the number of post components
-  local precomps postcomps
-  postcomps=$(($#apwd - $#areporoot))
-  precomps=$(($#apwdnamed - $postcomps))
+# #   # store paths in arrays for component count calculation
+# #   typeset -la apwd apwdnamed areporoot
+# #   apwd=(${(s:/:)PWD})
+# #   apwdnamed=(${(s:/:)pwdnamed})
+# #   areporoot=(${(s:/:)reporoot})
 
-  local postfix
-  if (( $postcomps > 0 )); then
-    postfix="%${postcomps}~"
-    postfix="${(%)postfix}"
-  fi
-  
-  # we don't want the prompt to get too long, so keep the total prompt length
-  # under $_PROMPT_PATH_MAXLEN (25), but ensure that the prefix is not shorter
-  # than $_PROMPT_PATH_MINLEN (10), no matter what
-  local prelen minlen prefix
-  prelen=$((${_PROMPT_PATH_MAXLEN:-25} - $#branch - $#postfix))
-  minlen=${_PROMPT_PATH_MINLEN:-10}
-  (( $prelen < $minlen )) && prelen=$minlen
-  prefix="%${prelen}<..<%-${precomps}~%<<"
-  prefix="${(%)prefix}"
+# #   # get the number of leading and trailing path components. Since we're using
+# #   # %~ later and then /home/madduck suddenly becomes ~, which is 1, not
+# #   # 2 components, we calculate the leading component count by using the named
+# #   # path and the number of post components
+# #   local precomps postcomps
+# #   postcomps=$(($#apwd - $#areporoot))
+# #   precomps=$(($#apwdnamed - $postcomps))
 
-  echo "$prefix" "$branch" "$postfix"
-}
+# #   local postfix
+# #   if (( $postcomps > 0 )); then
+# #     postfix="%${postcomps}~"
+# #     postfix="${(%)postfix}"
+# #   fi
 
-# set psvar[1..3] depending on repo type, or just psvar[1] if no repo found
-__vcs_set_prompt_variables()
-{
-    workdir=''
-    vcs=''
-    dirty=''
-    psvar=("${(%)p}")
+# #   # we don't want the prompt to get too long, so keep the total prompt length
+# #   # under $_PROMPT_PATH_MAXLEN (25), but ensure that the prefix is not shorter
+# #   # than $_PROMPT_PATH_MINLEN (10), no matter what
+# #   local prelen minlen prefix
+# #   prelen=$((${_PROMPT_PATH_MAXLEN:-25} - $#branch - $#postfix))
+# #   minlen=${_PROMPT_PATH_MINLEN:-10}
+# #   (( $prelen < $minlen )) && prelen=$minlen
+# #   prefix="%${prelen}<..<%-${precomps}~%<<"
+# #   prefix="${(%)prefix}"
 
-    __git_dir || __arch_dir || __svn_dir || __bzr_dir #|| __svk_dir || __hg_dir 
-    if [[ -z "$vcs" ]]; then
-        local p="%${MAXLEN}<..<%~%<<"
-        psvar=("${(%)p}")
-        return
-    fi
-    set -- $(__vcs_get_prompt_path_components "$base_dir" "$branch")
+# #   echo "$prefix" "$branch" "$postfix"
+# # }
 
-    # reporoot, or named variable directory
-    psvar[1]="$1"
-    if [[ -n "$vcs_op" ]]; then
-        psvar[2]="[$2::$vcs_op]"
-    else
-        psvar[2]="[$2]"
-    fi
-    psvar[3]="$3"
-    psvar[4]=$(print -P "%n\\\@%m:")
-    if [[ -n "$dirty" ]]; then
-        psvar[5]="$dirty"
-    fi
-    if [[ -n "$tracked" ]]; then
-        psvar[6]="$tracked"
-    fi
-    if [[ -n "$relative" ]]; then
-        psvar[7]="$relative"
-    fi
-    # echo >&2 "5=$psvar[5]"
-    # echo >&2 "6=$psvar[6]"
-    # echo >&2 "7=$psvar[7]"
-}
+# # # set psvar[1..3] depending on repo type, or just psvar[1] if no repo found
+# # __vcs_set_prompt_variables()
+# # {
+# #     workdir=''
+# #     vcs=''
+# #     dirty=''
+# #     psvar=("${(%)p}")
 
-# Set up the per-command and chpwd functions
-if [ $(id -u) != 0 ]; then
-  # too dangerous to be run as root
+# #     __git_dir || __arch_dir || __svn_dir || __bzr_dir #|| __svk_dir || __hg_dir
+# #     if [[ -z "$vcs" ]]; then
+# #         local p="%${MAXLEN}<..<%~%<<"
+# #         psvar=("${(%)p}")
+# #         return
+# #     fi
+# #     set -- $(__vcs_get_prompt_path_components "$base_dir" "$branch")
 
-  _update_vcs_prompt_vars_if_vcs_ran() {
-    case "$(history $(($HISTCMD - 1)))" in
-      # $vcs appeared in last command, so be sure to update
-      *${vcs}*) __vcs_set_prompt_variables "$vcs"
-    esac
-  }
-  precmd_functions+=(_update_vcs_prompt_vars_if_vcs_ran)
+# #     # reporoot, or named variable directory
+# #     psvar[1]="$1"
+# #     if [[ -n "$vcs_op" ]]; then
+# #         psvar[2]="[$2::$vcs_op]"
+# #     else
+# #         psvar[2]="[$2]"
+# #     fi
+# #     psvar[3]="$3"
+# #     psvar[4]=$(print -P "%n\\\@%m:")
+# #     if [[ -n "$dirty" ]]; then
+# #         psvar[5]="$dirty"
+# #     fi
+# #     if [[ -n "$tracked" ]]; then
+# #         psvar[6]="$tracked"
+# #     fi
+# #     if [[ -n "$relative" ]]; then
+# #         psvar[7]="$relative"
+# #     fi
+# #     # echo >&2 "5=$psvar[5]"
+# #     # echo >&2 "6=$psvar[6]"
+# #     # echo >&2 "7=$psvar[7]"
+# # }
 
-  _update_vcs_prompt_vars() {
-    __vcs_set_prompt_variables
-  }
-  chpwd_functions+=(_update_vcs_prompt_vars)
+# # # Set up the per-command and chpwd functions
+# # if [ $(id -u) != 0 ]; then
+# #   # too dangerous to be run as root
 
-  # call it once
-  _update_vcs_prompt_vars
-fi
+# #   _update_vcs_prompt_vars_if_vcs_ran() {
+# #     case "$(history $(($HISTCMD - 1)))" in
+# #       # $vcs appeared in last command, so be sure to update
+# #       *${vcs}*) __vcs_set_prompt_variables "$vcs"
+# #     esac
+# #   }
+# #   precmd_functions+=(_update_vcs_prompt_vars_if_vcs_ran)
+
+# #   _update_vcs_prompt_vars() {
+# #     __vcs_set_prompt_variables
+# #   }
+# #   chpwd_functions+=(_update_vcs_prompt_vars)
+
+# #   # call it once
+# #   _update_vcs_prompt_vars
+# # fi
 
 prompt_manoj_precmd () {
     setopt noxtrace localoptions
-
+    vcs_info
 }
 
 
@@ -670,7 +670,7 @@ function chpwd_profiles() {
     if (( ${+functions[chpwd_profile_$profile]} )) ; then
         chpwd_profile_${profile}
     fi
-
+    vcs_info
     CHPWD_PROFILE="${profile}"
     return 0
 }
@@ -688,8 +688,8 @@ prompt_manoj_setup () {
     RPS1='%~'
     RPS2='<%^'
 
-    if   [[ -d /proc/apm ]];  then  battery_color () { prompt_manoj_apm_color        }      
-    elif [[ -d /proc/acpi ]]; then  battery_color () { prompt_manoj_acpi_color       } 
+    if   [[ -d /proc/apm ]];  then  battery_color () { prompt_manoj_apm_color        }
+    elif [[ -d /proc/acpi ]]; then  battery_color () { prompt_manoj_acpi_color       }
     else                            battery_color () { echo  "$term_color_fg[green]" }
     fi
 
@@ -724,35 +724,50 @@ prompt_manoj_setup () {
     # %(6v,                        if untracked
     #    %6v                       add U
     # ,)                           else nothing
-    
+
 
     # %(7v,                        if not the same as tracking branch
     #    %7v                       state if ahead or behind
     # ,)                           else nothing
-    
+
     # %{$dim_vid$(battery_color)%} set the battery color from this point on
     # %(?,_,_%?)                    if last command was non error, enter _, else enter error code
     # >
     # %{$norm_vid%} "              normal video
 
+    PS1='${vcs_info_msg_0_}${tracked}%{$dim_vid$(battery_color)%}%(?,_,_%?)>%{$norm_vid%} '
+    RPS1='%{$dim_vid$(battery_color)%}${vcs_info_msg_1_}%{$reset_color%}'
     case $TERM in
         emacs|dumb)
             PS1="%(!,#,_)_> "
             ;;
         *xterm*|rxvt|screen|sun-cmd|(dt|k|E)term)
-            PS1="%(5v,%{$term_color_fg[magenta]%},)%(2V.%B%2v%b.)%(!,#,_)%(5V,%B%5v%b,)%(6V,%6v,)%(7V,%7v,)%{$dim_vid$(battery_color)%}%(?,_,_%?)>%{$norm_vid%} "
-            RPS1="%{$dim_vid$(battery_color)%}%40<...<%~%{$reset_color%}"
+# #          PS1="%(5v,%{$term_color_fg[magenta]%},)%(2V.%B%2v%b.)%(!,#,_)%(5V,%B%5v%b,)%(6V,%6v,)%(7V,%7v,)%{$dim_vid$(battery_color)%}%(?,_,_%?)>%{$norm_vid%} "
+# #          RPS1="%{$dim_vid$(battery_color)%}%40<...<%~%{$reset_color%}"
+            PS1='${vcs_info_msg_0_}${tracked}%{$dim_vid$(battery_color)%}%(?,_,_%?)>%{$norm_vid%} '
+            RPS1='%{$dim_vid$(battery_color)%}${vcs_info_msg_1_}%{$reset_color%}'
             ;;
         *)
-            PS1="%(5v,%{$term_color_fg[magenta]%},)%(2V.%B%2v%b.)%(!,#,_)%(5V,%B%5v%b,)%(6V,%6v,)%(7V,%7v,)%u%{$dim_vid$(battery_color)%}%(?,_,_%?)>%{$norm_vid%} "
-            RPS1="%{$dim_vid$(battery_color)%}%40<...<%~%{$reset_color%}"
+# #            PS1="%(5v,%{$term_color_fg[magenta]%},)%(2V.%B%2v%b.)%(!,#,_)%(5V,%B%5v%b,)%(6V,%6v,)%(7V,%7v,)%u%{$dim_vid$(battery_color)%}%(?,_,_%?)>%{$norm_vid%} "
+# #            RPS1="%{$dim_vid$(battery_color)%}%40<...<%~%{$reset_color%}"
+            PS1='${vcs_info_msg_0_}${tracked}%{$dim_vid$(battery_color)%}%(?,_,_%?)>%{$norm_vid%} '
+            RPS1='%{$dim_vid$(battery_color)%}${vcs_info_msg_1_}%{$reset_color%}'
     esac
     #PS1="%{%S%}${workdir}%s%{$dim_vid%}$PROMPTCOMMENT%{$norm_vid%} %{$(battery_color)%}%(!,#,_)_>%{$norm_vid%} "
 
     # space_left=$(( $COLUMNS - $#base_prompt_expanded_no_color - 2 ))
 
-    precmd  () { }
-    preexec () { 
+    # # precmd  () { }
+ precmd () {
+     vcs_info
+     tracked=''
+     if [[ $(git rev-parse --is-inside-work-tree 2> /dev/null) == 'true' ]] &&
+        git status --porcelain | grep '??' &> /dev/null ; then
+         #[[ -n $(git ls-files --others --exclude-standard) ]] ; then
+         tracked="U"
+     fi
+ }
+    preexec () {
         local CMDS
         local CMD
         set -A CMDS $(echo $1)
