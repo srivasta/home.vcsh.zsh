@@ -19,10 +19,14 @@ if test -d ~/lib/.sec/. ; then
         export PGPPATH=~/lib/.sec
         export GNUPGHOME=~/lib/.sec
 fi
+if [[ -n "$PS1" ]]; then
+    if [[ -r $ZDOTDIR/func/gpga-reload ]]; then
+        . $ZDOTDIR/func/gpga-reload
+    fi
+fi
 
-# Local Variables: 
-# comment-start: "#" 
-# tab-width: 2 
+# Local Variables:
+# comment-start: "#"
+# tab-width: 2
 # mode: sh
-# End: 
-
+# End:
