@@ -52,7 +52,7 @@ SYS_BIN=( ${^COMMON_SYS_DIRS}(-/NF^M) ${^SYS_DIRS}(-/NF^M) )
 CCACHE_BIN=(/usr/lib/ccache)
 # Default directories from my home 
 DEFAULT_DIRS=($default_dir/bin/$MY_SYS_TYPE $default_dir/sbin $default_dir/bin)
-MY_BIN=(  ${^CCACHE_BIN}(-/NF^M)  ${^DEFAULT_DIRS}(-/NF^M) )
+MY_BIN=(  ${^DEFAULT_DIRS}(-/NF^M) )
 
 ## Local directories
 LOCAL_DIRS=(/usr/local/bin /usr/local/scripts)
