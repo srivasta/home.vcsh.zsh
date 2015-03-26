@@ -42,6 +42,7 @@ if [[ -r /etc/timezone ]]; then
     TZ=$(cat /etc/timezone)    
 fi
 
+export GIT_EDITOR=~/bin/edit
 export EDITOR=~/bin/edit
 export VISUAL=~/bin/edit
 
