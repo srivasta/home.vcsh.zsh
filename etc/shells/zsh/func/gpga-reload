@@ -1,11 +1,16 @@
 if [[ -x /usr/bin/gpg-agent ]]; then
     FILE="${GNUPGHOME:-$HOME/.gnupg}/gpg-agent-info"
-    if [[ -r "$FILE" ]] &&                            \
+    if [[ -r "$FILE" ]]; then
        if kill -s 0 $(grep GPG_AGENT_INFO "$FILE"  | cut -d: -f 2 ); then
-        . "$FILE"
-        export GPG_AGENT_INFO
-        export SSH_AUTH_SOCK
-        export SSH_AGENT_PID
+            source "$FILE"
+            export GPG_AGENT_INFO
+            export SSH_AUTH_SOCK
+            export SSH_AGENT_PID
+        else
+	    ssh-add -D 2>/dev/null || true
+	    eval $(gpg-agent --daemon --enable-ssh-support \
+	    	--write-env-file "$FILE")
+        fi
     else
 	ssh-add -D 2>/dev/null || true
 	eval $(gpg-agent --daemon --enable-ssh-support \
