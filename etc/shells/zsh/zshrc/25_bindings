@@ -159,12 +159,16 @@ if [[ -n "$PS1" ]]; then
     bindkey ",." globalias
     bindkey '^xA' manoj_toggle_abbrev
     #k# Insert a timestamp on the command line (yyyy-mm-dd)
-    bindkey '^Ed' insert-datestamp
+    bindkey '^Xd' insert-datestamp
+
+    function unix_ts { LBUFFER="${LBUFFER}$(date '+%Y%m%d%H%M%S')" }
+    zle -N unix_ts
+    bindkey "^Xt" unix_ts
 
     #k# Insert last typed word
     bindkey "\em" insert-last-typed-word
     #k# prepend the current command with "sudo"
-    bindkey "^Os" sudo-command-line
+    bindkey "^Xs" sudo-command-line
     #k# jump to after first word (for adding options)
     bindkey '^x1' jump_after_first_word
 
@@ -173,6 +177,10 @@ if [[ -n "$PS1" ]]; then
     zstyle ':completion:hist-complete:*' completer _history
     #k# complete word from history with menu
     bindkey "^X^X" hist-complete
+
+    function lock_screen { gnome-screensaver-command -a }
+    zle -N lock_screen
+    bindkey "^Xl" lock_screen
 
     zfinit
 
