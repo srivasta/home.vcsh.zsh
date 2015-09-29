@@ -34,7 +34,7 @@
 
 
 export LS_OPTIONS=''
-export GREP_OPTIONS='--color=auto'
+## export GREP_OPTIONS='--color=auto'
 export EMAIL=srivasta@ieee.org
 export HTML_TIDY=$HOME/etc/tidy.conf
 export BOUML_ID=4

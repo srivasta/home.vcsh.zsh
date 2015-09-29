@@ -22,7 +22,7 @@ if [[ -n "$PS1" ]]; then
     alias mv='nocorrect mv'
     alias cp='nocorrect cp'
     alias mkdir='nocorrect noglob mkdir'
-    alias rm='nocorrect rm' 
+    alias rm='nocorrect rm'
     alias man='nocorrect man'
     alias mysql='nocorrect mysql'
 
@@ -67,6 +67,7 @@ if [[ -n "$PS1" ]]; then
 
     alias rot13=' tr A-Za-z N-ZA-Mn-za-m'
 
+    # emacs -batch -q  -no-site-file -f batch-byte-compile
     alias embc='emacs -batch -f batch-byte-compile'
     alias em='GDK_NATIVE_WINDOWS=1 emacsclient -c '
 
@@ -103,11 +104,11 @@ if [[ -n "$PS1" ]]; then
     # get top 10 shell commands:
     alias top10='print -l ${(o)history%% *} | uniq -c | sort -nr | head -n 10'
 
-#    alias prettylog=git log --pretty='format:%at %C(yellow)commit %H%Creset\nAuthor: %an <%ae>\nDate: %aD\n\n %s\n' | sort -r | cut -d' ' -f2- | sed -e 's/\\\n/\`echo -e '\n\r'`/g' | tr -d '\15\32' | less -R" 
+#    alias prettylog=git log --pretty='format:%at %C(yellow)commit %H%Creset\nAuthor: %an <%ae>\nDate: %aD\n\n %s\n' | sort -r | cut -d' ' -f2- | sed -e 's/\\\n/\`echo -e '\n\r'`/g' | tr -d '\15\32' | less -R"
 fi
 
-# Local Variables: 
-# comment-start: "#" 
-# tab-width: 2 
+# Local Variables:
+# comment-start: "#"
+# tab-width: 2
 # mode: sh
-# End: 
+# End:
