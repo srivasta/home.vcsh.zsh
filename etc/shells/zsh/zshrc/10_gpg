@@ -20,9 +20,7 @@ if test -d ~/lib/.sec/. ; then
         export GNUPGHOME=~/lib/.sec
 fi
 if [[ -n "$PS1" ]]; then
-    if [[ -r $ZDOTDIR/func/gpga-reload ]]; then
-        . $ZDOTDIR/func/gpga-reload
-    fi
+    export GPG_TTY=$(tty)
 fi
 
 # Local Variables:
