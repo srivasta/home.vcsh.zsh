@@ -51,6 +51,6 @@ if [[ -n "$PS1" ]]; then
 
     alias mlint='lintian --display-info --pedantic --info --show-overrides --color=auto'
     alias pparts='sudo piuparts -v -b /scratch/sandbox/base.tgz -t /scratch/sandbox/build'
-    alias mbld='ssh -t 192.168.1.41 bin/remote_build '
-    alias muml_halt='ssh -t root@192.168.1.41 halt'
+    alias mbld='ssh -t 192.168.122.45 bin/remote_build '
+    alias muml_halt='ssh -t root@192.168.122.45 halt'
 fi
