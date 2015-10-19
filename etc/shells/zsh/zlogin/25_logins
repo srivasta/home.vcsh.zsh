@@ -16,6 +16,10 @@
 # Copyright © 2005-2010 Manoj Srivastava <srivasta@debian.org>
 
 
-if test -f /usr/adm/wtmp ; then
-  last -5 $WHOAMI
+if [[ -n "$PS1" ]]; then
+    if [[ "$TERM" != "dumb" ]]; then
+        if test -f /usr/adm/wtmp ; then
+            last -5 $WHOAMI
+        fi
+    fi
 fi

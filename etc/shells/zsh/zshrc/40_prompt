@@ -30,7 +30,8 @@
 # Copyright © 2005-2010 Manoj Srivastava <srivasta@debian.org>
 
 # If running interactively, then:
-if [[ -n "$PS1" ]]; then
+if [[ -n "$PS1" ]] && [[ "$TERM" != "dumb" ]]; 
+  then
     autoload -Uz vcs_info
     zstyle ':vcs_info:*' check-for-changes  true
     # The %F{n} enable ANSI color n for foreground, and %f disables

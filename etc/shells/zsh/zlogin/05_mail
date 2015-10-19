@@ -14,6 +14,11 @@
 # Created On       : Mon Jul 25 15:23:57 2005
 #
 # Copyright © 2005-2010 Manoj Srivastava <srivasta@debian.org>
-if which from >/dev/null 2>&1; then
-    from
+
+if [[ -n "$PS1" ]]; then
+    if [[ "$TERM" != "dumb" ]]; then
+        if which from >/dev/null 2>&1; then
+            from
+        fi
+    fi
 fi

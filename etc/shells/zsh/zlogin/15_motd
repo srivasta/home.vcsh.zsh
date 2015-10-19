@@ -15,7 +15,10 @@
 #
 # Copyright © 2005-2010 Manoj Srivastava <srivasta@debian.org>
 
-if test -f /etc/motd ; then 
-  cat /etc/motd; 
+if [[ -n "$PS1" ]]; then
+    if [[ "$TERM" != "dumb" ]]; then
+        if test -f /etc/motd ; then
+            cat /etc/motd;
+        fi
+    fi
 fi
-

@@ -29,8 +29,10 @@ if [[ -n "$PS1" ]]; then
     #unalias run-help
     autoload run-help
 
-    if test -f ~/lib/reminders -a -x /usr/bin/remind ; then
-        remind -q -h -a -r -v ~/lib/reminders
+    if [[ "$TERM" != "dumb" ]]; then
+      if test -f ~/lib/reminders -a -x /usr/bin/remind ; then
+          remind -q -h -a -r -v ~/lib/reminders
+      fi
     fi
 
     ## remove duplicate entries from path,cdpath,manpath & fpath

@@ -27,3 +27,10 @@ export DOMAIN=`/bin/dnsdomainname`
 umask 022
 export LOGIN_SHELL=true
 
+if [[ "$TERM" == "dumb" ]]; then
+    unset PS2
+    unset PS3
+    unset PS4
+    unset RPS1
+    unset RPS2
+fi
