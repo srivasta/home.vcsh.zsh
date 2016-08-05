@@ -740,6 +740,7 @@ prompt_manoj_setup () {
     case $TERM in
         emacs|dumb)
             PS1="%(!,#,_)_> "
+            RPS1=
             ;;
         *xterm*|rxvt|screen|sun-cmd|(dt|k|E)term)
 # #          PS1="%(5v,%{$term_color_fg[magenta]%},)%(2V.%B%2v%b.)%(!,#,_)%(5V,%B%5v%b,)%(6V,%6v,)%(7V,%7v,)%{$dim_vid$(battery_color)%}%(?,_,_%?)>%{$norm_vid%} "

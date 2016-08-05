@@ -29,8 +29,18 @@
 #
 # Copyright © 2005-2010 Manoj Srivastava <srivasta@debian.org>
 
+if [[ "$TERM" == "dumb" ]]
+then
+  unsetopt zle
+  unsetopt prompt_cr
+  unsetopt prompt_subst
+  unfunction precmd
+  unfunction preexec
+  PS1='$ '
+  RPS1=
+fi
 # If running interactively, then:
-if [[ -n "$PS1" ]] && [[ "$TERM" != "dumb" ]]; 
+if [[ -n "$PS1" ]] && [[ "$TERM" != "dumb" ]];
   then
     autoload -Uz vcs_info
     zstyle ':vcs_info:*' check-for-changes  true
@@ -59,6 +69,14 @@ if [[ -n "$PS1" ]] && [[ "$TERM" != "dumb" ]];
     autoload -U promptinit
     promptinit
     prompt manoj
+else
+  unsetopt zle
+  unsetopt prompt_cr
+  unsetopt prompt_subst
+  unfunction precmd
+  unfunction preexec
+  PS1='$ '
+  RPS1=
 fi
 
 # Local Variables:
