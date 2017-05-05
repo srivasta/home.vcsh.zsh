@@ -48,6 +48,8 @@ export VISUAL=~/bin/edit
 
 
 export XDG_CONFIG_HOME=$HOME/etc
+export XDG_CACHE_HOME=$HOME/var/cache
+export XDG_DATA_HOME=$HOME/var/state
 export MODULE_STARTER_DIR=$XDG_CONFIG_HOME/module-starter
 export SCREENRC=$XDG_CONFIG_HOME/screenrc
 export PERLTIDY=$XDG_CONFIG_HOME/perltidyrc
