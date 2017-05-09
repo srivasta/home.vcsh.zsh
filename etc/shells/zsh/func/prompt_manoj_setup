@@ -585,6 +585,79 @@ prompt_manoj_chpwd () {
 # #   _update_vcs_prompt_vars
 # # fi
 
+# I have a very similar usecase and I added some automated logic to my
+# zsh configuration to notify me when tasks running longer than 5m
+# complete. My solution has a special tweak though, based on the fact
+# that I use a single tmux session for everything that I am working
+# on: The script does not notify if the Konsole window containing the
+# tmux session is in focus and the pane with the just finished command
+# is selected. This gets rid of most of the false positives (vi, man,
+# etc.) that you were talking about before. My script is quite adapted
+# to my personal usecase/toolchain but it might still provide some
+# inspiration to others. Probably, it can also easily be adapted to
+# bash but I never bothered to check.
+function tmux_stash_start() {
+    # Remember the date when the command was started, in unix time,
+    # and store the command.
+    cmd_start_date=$(date +%s)
+    if [[ -n "$TMUX"  ]]; then
+        cmd_start_tmux_pane="$(tmux display-message -p '#D')"
+        cmd_start_tmux_window="$(tmux display-message -p '${window_id}')"
+        cmd_name="$(tmux display-message -p '[#I:#W]') $1"
+    fi
+    if [[ -n "$DISPLAY" ]]; then
+        cmd_start_x11_window="$(xdotool getwindowfocus)"
+    fi
+
+}
+
+
+function notify_long_cmd() {
+  local cmd="$cmd_name"
+  cmd_name=""
+
+  local different=""
+  if [[ -n "$DISPLAY" ]]; then
+      start_x11_window="$cmd_start_x11_window"
+      cmd_start_x11_window=""
+      focussed_window_id=$( xdotool getwindowfocus )
+      if [[ "$start_x11_window" != "$focussed_window_id" ]]; then
+          different="yes"
+      fi
+  else
+      return 0
+  fi
+
+  if [[ -n "$TMUX" ]]; then
+      local start_tmux_window="$cmd_start_tmux_window"
+      cmd_start_tmux_window=""
+      local start_tmux_pane="$cmd_start_tmux_pane"
+      cmd_start_tmux_pane=""
+      local cmd_end_tmux_pane="$(tmux display-message -p '#D')"
+      local cmd_end_tmux_window="$(tmux display-message -p '${window_id}')"
+
+      if [ "$start_tmux_window" != "$cmd_end_tmux_window" ]; then
+          different="yes"
+      fi
+  else
+      if [[ -n "$cmd_start_tmux_window" ]]; then
+          return 0
+      fi
+  fi
+
+  if [[ -z "$diffrent" ]]; then
+      return 0
+  fi
+
+  if ! [[ -z $cmd_start_date ]] && [[ -n $cmd ]]; then
+    cmd_end_date=$(date +%s)
+    cmd_elapsed_time=$(( $cmd_end_date - $cmd_start_date ))
+    if [[ $cmd_elapsed_time -gt 300 ]]; then
+      notify-send -u low  "Command finished:\n\n$cmd" 300
+    fi
+  fi
+}
+
 prompt_manoj_precmd () {
     setopt noxtrace localoptions
     vcs_info
@@ -767,6 +840,8 @@ prompt_manoj_setup () {
          #[[ -n $(git ls-files --others --exclude-standard) ]] ; then
          tracked="U"
      fi
+     notify_long_cmd
+
  }
     preexec () {
         local CMDS
@@ -798,6 +873,8 @@ prompt_manoj_setup () {
         else
             CMD=$CMDS[1]
         fi
+        # Remember the date when the command was started
+        tmux_stash_start
         setopt UNSET # Avoid errors from undefined STY for users with 'NOUNSET'
         if [[ $TERM == "screen" || -n "$STY" ]]; then
             echo -ne "\ek$CMD\e\\"
