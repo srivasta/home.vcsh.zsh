@@ -19,7 +19,7 @@ if [[ -d $ZDOTDIR/func ]]; then
     fpath=($ZDOTDIR/func $fpath)
 fi
 mailpath=(
-    ~/var/spool/mail/important ~/var/spool/mail/debian.spool 
+    ~/var/spool/mail/important ~/var/spool/mail/debian.spool
 )
 
 ########################################################################################
@@ -40,7 +40,7 @@ case "$MY_SYS_TYPE" in
     alpha-dec-osf*)
         export MORE=-e;
         SYS_DIRS=( /usr/ucb /usr/local/bin/AF )
-        ulimit -c 0; 
+        ulimit -c 0;
         ;;
     *)
         ;;
@@ -50,7 +50,7 @@ SYS_BIN=( ${^COMMON_SYS_DIRS}(-/NF^M) ${^SYS_DIRS}(-/NF^M) )
 
 # compiler cache
 CCACHE_BIN=(/usr/lib/ccache)
-# Default directories from my home 
+# Default directories from my home
 DEFAULT_DIRS=($default_dir/bin/$MY_SYS_TYPE $default_dir/sbin $default_dir/bin)
 MY_BIN=(  ${^DEFAULT_DIRS}(-/NF^M) )
 
@@ -71,17 +71,22 @@ export EC2_HOME=/usr/local/ec2
 EC2_DIRS=( $EC2_HOME )
 EC2_BIN=( ${^EC2_DIRS}(-/NF^M) )
 
+# go
+export GOPATH=$HOME/src/golang
+GO_DIRS=( $GOPATH/bin )
+GO_BIN=( ${^GO_DIRS}(-/NF^M) )
+
 # INFOPATH, which is the variable looked at by info, is not an array
-INFO_DIRS=( /usr/local/info /usr/local/share/emacs/site-lisp/gnus-cvs/texi 
+INFO_DIRS=( /usr/local/info /usr/local/share/emacs/site-lisp/gnus-cvs/texi
     /usr/share/info /usr/info /usr/share/texmf/source/info )
 INFOPATH=${(j.:.)$(echo ${^INFO_DIRS}(-/NF^M) )}
 
 
 
-path=( $MY_BIN $LOCAL_BIN $SYS_BIN $X11_BIN $TEX_BIN $EC2_BIN)
+path=( $MY_BIN $LOCAL_BIN $SYS_BIN $X11_BIN $TEX_BIN $EC2_BIN $GO_BIN )
 
 NLSPATH="./%N:/usr/local/etc/%N"
-NLS_DIRS='/var/dcelocal/nls/msg /opt/dcelocal/nls/msg /usr/lib/nls/msg' 
+NLS_DIRS='/var/dcelocal/nls/msg /opt/dcelocal/nls/msg /usr/lib/nls/msg'
 for dir in $NLS_DIRS; do
         if test -d  $dir/. ; then
                 for j in $dir/*; do
@@ -100,8 +105,8 @@ fi
 export XNLSPATH
 
 
-# Local Variables: 
-# comment-start: "#" 
-# tab-width: 2 
+# Local Variables:
+# comment-start: "#"
+# tab-width: 2
 # mode: sh
-# End: 
+# End:
