@@ -45,6 +45,7 @@ fi
 export GIT_EDITOR=~/bin/edit
 export EDITOR=~/bin/edit
 export VISUAL=~/bin/edit
+export HGMERGE=emacsclient
 
 
 export XDG_CONFIG_HOME=$HOME/etc
