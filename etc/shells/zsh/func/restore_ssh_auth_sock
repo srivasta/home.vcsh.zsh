@@ -1,0 +1,8 @@
+#! /bin/bash
+#restore_ssh_auth_sock() {
+
+  # Set up the $SSH_AUTH_SOCK for prodaccess, glogin, etc.
+  local tmp_ssh_dir=$(ls -t /tmp | grep -E "^ssh-" | head -n 1)
+  local agent_fname=$(ls -t /tmp/$tmp_ssh_dir | grep -E "^agent." | head -n 1)
+  export SSH_AUTH_SOCK=/tmp/${tmp_ssh_dir}/${agent_fname}
+#}
