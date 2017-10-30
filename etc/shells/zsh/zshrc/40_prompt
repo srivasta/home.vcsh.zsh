@@ -76,7 +76,7 @@ then
            git status --porcelain | grep '??' &> /dev/null ; then
             #[[ -n $(git ls-files --others --exclude-standard) ]] ; then
             tracked="U"
-        elif is_hg_root && hg summary | grep -q 'commit: (clean)' &> /dev/null ; then
+        elif is_hg_root && ! $(hg summary | grep -q 'commit: (clean)' &> /dev/null) ; then
             tracked="U"
         fi
     }
