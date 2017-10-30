@@ -55,7 +55,7 @@ if [[ -n "$PS1" ]] && [[ "$TERM" != "dumb" ]];
            "%F{6}[${VCSH_REPO_NAME}${VCSH_REPO_NAME:+|}%b]_%c%u%f" \
            '%F{1}%F{5}(%f%s%F{5})%F{1}%r%f|%F{2}%S%f%m'
     zstyle ':vcs_info:(sv[nk]|bzr):*' branchformat '%b%F{1}:%F{3}%r'
-    zstyle ':vcs_info:*' enable git cvs svn
+    zstyle ':vcs_info:*' enable git cvs hg
     zstyle ':vcs_info:*' nvcsformats  "_"  "%f%1~"
     precmd () {
         vcs_info
