@@ -73,7 +73,7 @@ then
         vcs_info
         tracked=''
         if [[ $(git rev-parse --is-inside-work-tree 2> /dev/null) == 'true' ]] &&
-           git status --porcelain | grep '??' &> /dev/null ; then
+           git status --porcelain | grep -q '??' &> /dev/null ; then
             #[[ -n $(git ls-files --others --exclude-standard) ]] ; then
             tracked="U"
         elif is_hg_root && ! $(hg summary | grep -q 'commit: (clean)' &> /dev/null) ; then
