@@ -178,7 +178,8 @@ if [[ -n "$PS1" ]]; then
     #k# complete word from history with menu
     bindkey "^X^X" hist-complete
 
-    function lock_screen { gnome-screensaver-command -a }
+    # function lock_screen { gnome-screensaver-command -a }
+    function lock_screen { xdg-screensaver lock }
     zle -N lock_screen
     bindkey "^Xl" lock_screen
 
