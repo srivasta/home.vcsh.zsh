@@ -20,9 +20,9 @@ if [[ -n "$PS1" ]]; then
 
     if command -v pscol >/dev/null 2>&1 ; then
         $(pscol)
-    fi     
+    fi
 
-    # This will color the stderr line red. 
+    # This will color the stderr line red.
     #  exec 2>>(while read line; do
     #  print '\e[91m'${(q)line}'\e[0m' > /dev/tty; done &)
 
@@ -39,12 +39,21 @@ if [[ -n "$PS1" ]]; then
     typeset -U path cdpath manpath fpath
     # Remove utility functions
     xunfunction
+
+    export ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
+    export ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="bg=#001100,fg=cyan,bold,underline"
+    set -A ZSH_AUTOSUGGEST_STRATEGY history completion
+    set -A ZSH_HIGHLIGHT_HIGHLIGHTERS main brackets pattern cursor
+
+    source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+    source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+
 fi
 
 
-# Local Variables: 
-# comment-start: "#" 
-# tab-width: 2 
-# mode: sh
-# End: 
 
+# Local Variables:
+# comment-start: "#"
+# tab-width: 2
+# mode: sh
+# End:

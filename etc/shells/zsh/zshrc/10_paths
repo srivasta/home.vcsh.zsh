@@ -18,6 +18,11 @@
 if [[ -d $ZDOTDIR/func ]]; then
     fpath=($ZDOTDIR/func $fpath)
 fi
+
+for dir in $(find /usr/share/zsh/functions/  -maxdepth 1 -type d  | egrep -v '/usr/share/zsh/functions/$' ); do
+    fpath=($dir $fpath)
+done
+
 mailpath=(
     ~/var/spool/mail/important ~/var/spool/mail/debian.spool
 )

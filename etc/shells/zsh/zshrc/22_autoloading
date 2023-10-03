@@ -35,6 +35,12 @@ for rh in run-help{,-git,-svk,-svn}; do
     zrcautoload $rh
 done; unset rh
 
+for dir in $(find /usr/share/zsh/functions/  -maxdepth 1 -type d | egrep -v '/usr/share/zsh/functions/$' ) ; do
+    for file in $(find $dir -type f | egrep -v '/_'); do
+        autoload $(basename $file) && zle -N $(basename $file)
+    done
+done
+
 # completion system
 if zrcautoload compinit ; then
     compinit || print 'Notice: no compinit available :('
