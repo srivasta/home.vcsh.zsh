@@ -71,6 +71,12 @@ export EC2_HOME=/usr/local/ec2
 EC2_DIRS=( $EC2_HOME )
 EC2_BIN=( ${^EC2_DIRS}(-/NF^M) )
 
+# rust
+export RUSTUP_HOME=$HOME/etc/rustup
+export CARGO_HOME=$HOME/etc/cargo
+RUST_DIRS=( $CARGO_HOME/bin $RUSTUP_HOME/bin )
+RUST_BIN=( ${^RUST_DIRS}(-/NF^M) )
+
 # go
 if [ -d /usr/lib/go-1.9/bin ]; then
     GO_ROOT_DIR=/usr/lib/go-1.9/bin
@@ -88,7 +94,7 @@ INFOPATH=${(j.:.)$(echo ${^INFO_DIRS}(-/NF^M) )}
 
 
 
-path=( $MY_BIN $GO_PREFIX_BIN $LOCAL_BIN $SYS_BIN $X11_BIN $TEX_BIN $EC2_BIN $GO_BIN )
+path=( $MY_BIN $GO_PREFIX_BIN $RUST_BIN $LOCAL_BIN $SYS_BIN $X11_BIN $TEX_BIN $EC2_BIN $GO_BIN )
 
 NLSPATH="./%N:/usr/local/etc/%N"
 NLS_DIRS='/var/dcelocal/nls/msg /opt/dcelocal/nls/msg /usr/lib/nls/msg'
