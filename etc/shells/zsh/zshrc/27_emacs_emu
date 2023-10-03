@@ -122,7 +122,7 @@ upcase-region() {
     ((MARK > CURSOR)) && zle .exchange-point-and-mark
     BUFFER[MARK+1,CURSOR]=$BUFFER[MARK+1,CURSOR]:u
 }
-zle -N downcase-region
+zle -N upcase-region
 
 mark-whole-buffer() { CURSOR=0; MARK=$#BUFFER }
 zle -N mark-whole-buffer
